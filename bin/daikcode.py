@@ -34,20 +34,29 @@ Implements
 @license: GPL(v3)
 @organization: Domogik
 """
+# A debugging code checking import error
+try:
+    from domogik.xpl.common.xplconnector import Listener
+    from domogik.xpl.common.xplmessage import XplMessage
+    from domogik.xpl.common.plugin import XplPlugin
+    from domogik.mq.reqrep.client import MQSyncReq
+    from domogik.mq.message import MQMessage
 
-from domogik.xpl.common.xplmessage import XplMessage
-from domogik.xpl.common.plugin import XplPlugin
-from domogik.xpl.common.queryconfig import Query
-from domogik.mq.reqrep.client import MQSyncReq
-from domogik.mq.message import MQMessage
-
-from packages.plugin_daikcode.lib.daikincode import CodeIRDaikin
-import threading
-import traceback
-
+    from domogik_packages.plugin_daikcode.lib.daikcode import RemoteManager,  getRemoteId
+    import threading
+    import traceback
+except ImportError as exc :
+    import logging
+    logging.basicConfig(filename='/var/log/domogik/daikcode_start_error.log',level=logging.DEBUG)
+    log = logging.getLogger('daikcode_start_error')
+    err = "Error: Plugin Starting failed to import module ({})".format(exc) 
+    print err
+    logging.error(err)
+    print log
+ #  logging.removeHandler(log)
 
 class DaikinManager(XplPlugin):
-    """ Envois et recois des code xPL ir DAIKIN
+    """ Envois et recois des codes xPL IR DAIKIN
     """
 
     def __init__(self):
@@ -60,88 +69,76 @@ class DaikinManager(XplPlugin):
             return
 
         # get the devices list
-        self.devices = self.get_device_list(quit_if_no_device = True)
-       
-
-        disk_manager = Disk(self.log, self.send_xpl, self.get_stop())
-
-        ### Start listening each path
-        threads = {}
-        for a_device in self.devices:
-            try:
-                # feature get_total_space
-                path = self.get_parameter_for_feature(a_device, "xpl_stats", "get_total_space", "device")
-                interval = self.get_parameter_for_feature(a_device, "xpl_stats", "get_total_space", "interval")
-                self.log.info("Start monitoring totel space for '%s'" % path)
-                thr_name = "{0}-{1}".format(a_device['name'], "get_total_space")
-                threads[thr_name] = threading.Thread(None,
-                                               disk_manager.get_total_space,
-                                              thr_name,
-                                              (path, interval,),
-                                              {})
-                threads[thr_name].start()
-
-                # feature get_free_space
-                path = self.get_parameter_for_feature(a_device, "xpl_stats", "get_free_space", "device")
-                interval = self.get_parameter_for_feature(a_device, "xpl_stats", "get_free_space", "interval")
-                self.log.info("Start monitoring free space for '%s'" % path)
-                thr_name = "{0}-{1}".format(a_device['name'], "get_free_space")
-                threads[thr_name] = threading.Thread(None,
-                                               disk_manager.get_free_space,
-                                              thr_name,
-                                              (path, interval,),
-                                              {})
-                threads[thr_name].start()
-
-                # feature get_used_space
-                path = self.get_parameter_for_feature(a_device, "xpl_stats", "get_used_space", "device")
-                interval = self.get_parameter_for_feature(a_device, "xpl_stats", "get_used_space", "interval")
-                self.log.info("Start monitoring used space for '%s'" % path)
-                thr_name = "{0}-{1}".format(a_device['name'], "get_used_space")
-                threads[thr_name] = threading.Thread(None,
-                                               disk_manager.get_used_space,
-                                              thr_name,
-                                              (path, interval,),
-                                              {})
-                threads[thr_name].start()
-
-                # feature get_percent_used
-                path = self.get_parameter_for_feature(a_device, "xpl_stats", "get_percent_used", "device")
-                interval = self.get_parameter_for_feature(a_device, "xpl_stats", "get_percent_used", "interval")
-                self.log.info("Start monitoring percent used for '%s'" % path)
-                thr_name = "{0}-{1}".format(a_device['name'], "get_percent_used")
-                threads[thr_name] = threading.Thread(None,
-                                               disk_manager.get_percent_used,
-                                              thr_name,
-                                              (path, interval,),
-                                              {})
-                threads[thr_name].start()
-
+        self.devices = self.get_device_list(quit_if_no_device = False)
+#        print 'devices' , self.devices
+        # get the config values
+        self.remoteManager = RemoteManager(self, self.send_xplTrig)
+        for a_device in self.devices :
+            try :
+             #   self.log.debug("device : {0}".format(a_device))
+#                device_name= self.get_parameter_for_feature(a_device, "xpl_stats", "get_switch_state", "device")
+#                irtransmitter = self.get_parameter_for_feature(a_device, "xpl_stats", "get_switch_state", "irtransmitter")
+#                options = self.get_parameter_for_feature(a_device, "xpl_stats", "get_switch_state", "options")
+#                datatype = self.get_parameter_for_feature(a_device, "xpl_stats", "get_switch_state", "datatype")
+                if a_device['device_type_id'] != 'daikcode.remotearc' :
+                #if device_name == None  or irtransmitter == None or options == None :
+                    self.log.error(u"No daikcode.remotearc device type")
+                    break
+                else :
+                    self.remoteManager.addRemote(a_device)
+                    self.log.debug("Ready to work with device {0}".format(getRemoteId(a_device)))
             except:
                 self.log.error(traceback.format_exc())
                 # we don't quit plugin if an error occured
-                # a disk can have been unmounted for a while
                 #self.force_leave()
                 #return
-
-
-
-        self.ready()
+         # Create the xpl listeners
+        Listener(self.handle_xpl_cmd, self.myxpl,{'schema': 'daikin.basic',
+                                                                        'xpltype': 'xpl-cmnd'})
+        print "Plugin ready :)"
         self.log.info("Plugin ready :)")
+        self.ready()
 
-
-    def send_xpl(self, path, du_type, du_value):
-        """ Send xPL message on network
+    def send_xplStat(self, data):
+        """ Send xPL cmd message on network
         """
-        self.log.debug("Values for {0} on {1} : {2}".format(du_type, path, du_value))
         msg = XplMessage()
         msg.set_type("xpl-stat")
         msg.set_schema("sensor.basic")
-        msg.add_data({"device" : path})
-        msg.add_data({"type" : du_type})
-        msg.add_data({"current" : du_value})
+        msg.add_data(data)
         self.myxpl.send(msg)
 
+    def send_xplTrig(self, data):
+        """ Send xPL message on network
+        """
+        self.log.debug("Xpl Trig for {0}".format(data))
+        msg = XplMessage()
+        msg.set_type("xpl-trig")
+        msg.set_schema("sensor.basic")
+        msg.add_data(data)
+        self.myxpl.send(msg)
+        
+    def handle_xpl_trig(self, massage):
+        self.log.debug("xpl-trig listener received message:{0}".format(message))
+        print message
+    
+    def handle_xpl_cmd(self,  message):
+        """ Process xpl schema daikin.basic
+        """
+        self.log.debug("xpl-cmds listener received message:{0}".format(message))
+        device_name = message.data['device']
+        self.log.debug("device :" + device_name)
+        idsRemote = self.remoteManager.getIdsRemote(device_name)
+        find = False
+        if idsRemote != [] :
+            for id in idsRemote :       
+                remote = self.remoteManager.getRemote(id)
+                if remote :
+                    self.log.debug("Handle xpl-cmds for remote :{0}".format(message.data['device']))
+                    find = True
+                    remote.handle_xpl_cmd(message.data)
+        if not find : self.log.debug("xpl-cmds received for unknowns remote :{0}".format(message.data['device']))
+    
 
 if __name__ == "__main__":
     DaikinManager()

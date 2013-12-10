@@ -1,9 +1,6 @@
 # !/usr/bin/python
 #-*- coding: utf-8 -*-
 
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 """ This file is part of B{Domogik} project (U{http://www.domogik.org}$
 
 License
@@ -45,6 +42,13 @@ codeConst = "210001000010110111110010000001111000000000000000000000000010000003"
 cmdsDaikin = ['Inconnue','Pulse de start','ON/OFF','Mode Fonctionnement','Température','Ventilation battante verticale','Vitesse de ventilation','Ventilation battante horizontale',
 'Heure départ','Heure de fin','Mode powerful','Mode silencieux','Home leave','Sensor','Code de vérification']
 
+class DaikinCodeException(Exception):
+    """"DaikinCode lib exception  class"""
+            
+    def __init__(self, value):
+        self.msg = "DaikinCode lib exception : " + value
+        Exception.__init__(self, self.msg)
+                                                    
 
 class CmdDaikin:
         "Définition d'une commande type daikin"
@@ -63,7 +67,7 @@ class CmdDaikin:
     
         def renvoiCodeIR (self, ordre = "", opt = 0):
                 "Renvoi le code IR en fonction de la commande et de l'ordre \
-           Doit-être appelé par la méthode de la class CodeIRDaikin.genererCodeIR() \
+           Doit-être appelé par la méthode de la class CodeIRDaikin.buildBinCodeIR() \
            pour géré les exceptions des températures."
                 cir=""
                 if ordre == "" :
@@ -106,6 +110,7 @@ class CmdDaikin:
 class Timing:
         "Timing, pulse et pause"
         def __init__ (self, li="" ):
+                "Init de l'objet, valeur par défauts type IRtrans."
                 self.num = 0        # Numéro du timing
                 self.nbt = 0         # nombre de valeurs de time du timing
                 self.timings=[]     # Listes des timings pair pulse/pause en micro sec.
@@ -119,6 +124,8 @@ class Timing:
                 self.rc6 = 0        # RC6 code (pas besoin de timing)
                 self.notog = 0     # RC5 / RC6 toggle bit non utilisé
                 if li !="" : self.decodeTimingITRrans(li)
+                else : self.setDict({'NUM':0, 'N': 4, 'FREQ': 38, 'FL': 0, 'RP': 0, 'RS': 0, 'RC5': 0, 'RC6': 0, 'RC': 1, 'NOTOG': 0, 'SB': 0, 
+                                           'TIMINGS': [['440', '448'], ['440', '1288'], ['3448', '1720'], ['408', '29616']] })
                  
         def decodeTimingITRrans (self, li):
                 "Décode les informations de timing type IRTrans, issues d'un fichier IRTrans. \
@@ -148,7 +155,7 @@ class Timing:
                      return self    
             
         def encodeTimingIRTrans(self):      
-            "Encode les information de timing sous format IRTrans, pour inclure dans un fichier."
+            "Encode les informations de timing sous format IRTrans, pour inclure dans un fichier."
             li ='  [%d][N]%d' %(self.num,  self.nbt)
             n = 1
             for a in self.timings :
@@ -180,8 +187,40 @@ class Timing:
             print "     RC5 code (pas besoin de timing) : ", self.rc5
             print "     RC6 code (pas besoin de timing) : ", self.rc6
             print "     RC5 / RC6 toggle bit non utilisé : ", self.notog
-            
-
+        
+        def getDict (self):
+            "Retourne les valeurs sous forme de dict"
+            return {
+                'N' : self.nbt, 
+                'RC' : self.rc,
+                'RP' : self.rp,
+                'FL' : self.fl,
+                'FREQ' : self.freq,
+                'SB' : self.sb,
+                'RS' : self.rs,
+                'RC5' : self.rc5, 
+                'RC6' : self.rc6, 
+                'NOTOG' : self.notog,
+                'TIMINGS' : self.timings
+                }
+        def setDict(self,  timing):
+            "Affecte le valeur du timming à la class."
+            try : 
+                self.nbt = timing['N']
+                self.rc = timing['RC']
+                self.rp = timing['RP']
+                self.fl = timing['FL']
+                self.freq = timing['FREQ']
+                self.sb = timing['SB']
+                self.rs = timing['RS']
+                self.rc5 = timing['RC5']
+                self.rc6 = timing['RC6']
+                self.notog = timing['NOTOG']
+                self.timings = timing['TIMINGS']
+            except:
+               raise  DaikinCodeException('Bad Timming format : {0}'.format(timing))
+        
+        
 class Timings :
         "Liste des timings (pulses et pauses)"
         def __init__ (self ):
@@ -196,7 +235,7 @@ class Timings :
                 try:
                     fich = open (fichier,'r')
                 except :
-                    print fichier
+                    print 'error ouverture fichier : ', fichier
                     return 0
                 else :
                     while 1:
@@ -220,7 +259,7 @@ class Timings :
             
 class CodeIRDaikin :
         "Liste de cmd daikin pour gestion du code complet "
-        def __init__ (self,  nom ='test',  timing = 0 ):
+        def __init__ (self,  nom ='test',  timing = Timing() ):
                 self.lstCmds = []     # Suite des commandes à enchainer
                 self.nom =nom        # Nom de la commande
                 self.timing=timing    # timing utilisé
@@ -264,8 +303,8 @@ class CodeIRDaikin :
                 "Ajoute une commande à la collection"
                 self.lstCmds.append (cmd)
                 
-        def genererCodeIR (self): 
-                "Génère le code IR complet en fonction des valeurs courantes d'ordre"
+        def buildBinCodeIR (self): 
+                "Génère le code IR complet en fonction des valeurs courantes d'ordre, retourne une string de code binaire."
                 modExcept = {"Ventilation" : 25,  "Condensation" : 96}  # Valeurs corrigées en cas d'exception
                 code=""
                 for cmd in self.lstCmds :
@@ -279,6 +318,14 @@ class CodeIRDaikin :
                     code = code + cmd.renvoiCodeIR (ord,  opt)
                 code = self.cheksum(codeConst + code)
                 return code
+                
+        def buildRawCodeIR (self): 
+                """Génère le code IR complet en fonction des valeurs courantes d'ordre,
+                    retourne dict avec un tableau de code RAW avec les paires pulse/pause."""
+                codeB = self.buildBinCodeIR()
+                codeR ={'FREQ': self.timing.freq,  'PAIRS' : []}
+                for t in codeB : codeR['PAIRS'].append(self.timing.timings[int(t)])
+                return codeR
                 
         def indexCmd (self,  cmd):
                 "Retourne l'index, dans la liste de commande, d'une commande particulière"
@@ -324,7 +371,7 @@ class CodeIRDaikin :
                 
         def encodeCmdIRTrans(self):
                 "Encode en ligne ASCII la commande pour format fichier IRTrans"
-                return  '  [%s][T]%d[D]%s' %(self.nom,  self.timing,  self.genererCodeIR ())
+                return  '  [%s][T]%d[D]%s' %(self.nom,  self.timing.num,  self.buildBinCodeIR ())
                 
                 
                 
@@ -337,18 +384,19 @@ if __name__ == '__main__' :
     while a < nb :
         print cmds.lstCmds[a].cmd, " --> ", cmds.lstCmds[a].ordC
         a=a+1
-    print cmds.genererCodeIR ()                 
+    print cmds.buildBinCodeIR ()                 
     tims = Timings()
-    tims.litFichIRTrans("Daikin.rem")
-   
-    print ' '
-
+    tims.litFichIRTrans("..\data\Daikin.rem")
+    for t in tims.lstTimings : 
+        print t.getDict()
+        t.setDict({'TIMINGS': [['440', '448'], ['440', '1288'], ['3448', '1720'], ['408', '29616']], 'N': 4, 'FREQ': 38, 'FL': 0, 'RP': 0, 'RS': 0, 'RC5': 0, 'RC6': 0, 'RC': 1, 'NOTOG': 0, 'SB': 0})
+    print cmds.buildRawCodeIR()
     cmds.setCmd("Mode Fonctionnement","Ventilation")
     cmds.setCmd("ON/OFF","ON")
     cmds.setCmd("Température", opt = 35)  
     cmds.setCmd("Ventilation battante verticale", "Activée")
     cmds.setCmd("Vitesse de ventilation", "Automatique")
-    print cmds.genererCodeIR ()
+    print cmds.buildBinCodeIR ()
     for lab in cmds.labelEtatCmds() :
         print lab.keys(),  lab.values()
 

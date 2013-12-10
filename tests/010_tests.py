@@ -31,7 +31,7 @@ class DaikincodeTestCase(PluginTestCase):
         self.assertTrue(True)
 
     def test_0110_get_switch_state(self):
-        """ check if the xpl messages about get_switch_state are OK
+        """ check if the xpl messages about send xpl_cmnd are OK
             Sample message : 
             xpl-trig
             {
@@ -39,11 +39,11 @@ class DaikincodeTestCase(PluginTestCase):
             source=domogik-daikcode.domogik-vm1
             target=*
             }
-            sensor.basic
+            daikin.basic
             {
-            device=/home
-            device=Daikin remote 1
-            current=19465224
+            device= # Name
+            command= # a command reference
+            key = # command options
             }
         """
         global device_id

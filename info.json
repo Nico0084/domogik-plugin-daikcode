@@ -54,7 +54,7 @@
             "name" : "Vertical swing On-Off",
             "return_confirmation" : true,
             "parameters" : [{
-                    "key" : "vertical_swing",
+                    "key" : "vertical-swing",
                     "data_type" : "DT_Switch",
                     "conversion" : ""
                 }
@@ -65,7 +65,7 @@
             "name" : "Horizontal swing On-Off",
             "return_confirmation" : true,
             "parameters" : [{
-                    "key" : "horizontal_swing",
+                    "key" : "horizontal-swing",
                     "data_type" : "DT_Switch",
                     "conversion" : ""
                 }
@@ -109,7 +109,7 @@
             "name" : "Home leave On-Off",
             "return_confirmation" : true,
             "parameters" : [{
-                    "key" : "home_leave",
+                    "key" : "home-leave",
                     "data_type" : "DT_Switch",
                     "conversion" : ""
                 }
@@ -409,17 +409,13 @@
                     "description" : "Daikin remote unit identification",
                     "type" : "string"
                 }, {
-                    "key" : "irtransmitter",
-					"xpl": true,
-                    "description" : "IR transmitter",
-                    "type" : "choice",
-                    "choices" : {
-                        "1" : "IRTrans server",
-                        "2" : "IR Arduino"
-                    }
+                    "key" : "irdevice",
+					"xpl": false,
+                    "description" : "IRtransmitter Domogik device",
+                    "type" : "string"
                 }, {
                     "key" : "datatype",
-					"xpl": true,
+					"xpl": false,
                     "description" : "Type of data to send",
                     "type" : "choice",
                     "choices" : {
@@ -427,11 +423,6 @@
                         "2" : "IR Raw",
                         "3" : "IR Hexa"
                     }
-                }, {
-                    "key" : "options",
-					"xpl": true,
-                    "description" : "Transmitter option(s) - for IRTrans set 'irclient' directory software.",
-                    "type" : "string"
                 }
             ]
         }

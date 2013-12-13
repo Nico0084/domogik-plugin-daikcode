@@ -153,7 +153,7 @@ class RemoteManager():
     def sendXplAck(self,  data):
         """Send an ack xpl message"""
     #    self._xplPlugin.log.debug(u"Send ack {0}".format(data))
-        self._cb_send_xPL(data)
+        self._cb_send_xPL("xpl-trig", "sensor.basic", data)
 
 class DaikinRemote():
     """Remote control type Daikin object"""
@@ -186,36 +186,76 @@ class DaikinRemote():
                     if a_param['key'] == 'device' : return a_param['value']
             return None
         else : return None
+        
+    def _getDatatype(self):
+        """Return datatype for xPL domogik device"""
+        if self._device :
+            return self._device['parameters']["datatype"]['value']
+        else : return None
+        
+    def sendToIRdevice(self):
+        """Send xpl-cmnd to IRTrans Transmitter."""
+        # TODO : gérer les datatypes
+        data = {"device":  self._device['parameters']["irdevice"]['value'],  "command": "send",  "datatype": self._getDatatype()}
+        if self._getDatatype() == "IRTrans standard" :
+            data["code"] = self.cmdCode.encodeCmdIRTrans()
+            data["timing"] = self.cmdCode.timing.encodeTimingIRTrans()
+            self._manager._cb_send_xPL("xpl-cmnd", "irtrans.basic",  data)
+        else : self._log.info (u"datatype : {0} not handled, xpl-cmnd to IR transmitter not send.".format(self._getDatatype()))
     
     def handle_xpl_cmd(self,  xPLmessage):
         """Handle a xpl-cmnd message from hub"""
-        command = xPLmessage['command']
+        data = {'device': xPLmessage['device'],  'datatype': xPLmessage['datatype']}
         if xPLmessage['command'] == 'switch' :
-            if xPLmessage['power'] == 'on': val = "ON"
-            else :val = "OFF"
-            self.cmdCode.setCmd("ON/OFF", val)
-            data = {'device': xPLmessage['device'],  'datatype': xPLmessage['datatype'],  'irtransmitter': xPLmessage['irtransmitter'], 'options': xPLmessage['options'], 
-                                      'type': "switch",  'state': xPLmessage['power']}
-            self._log.debug(u"Commande Switch is ok")
-            self._manager.sendXplAck(data)
+            if xPLmessage.has_key('power') : cmd = 'power'
+            elif xPLmessage.has_key('vertical-swing') : cmd = 'vertical-swing'
+            elif xPLmessage.has_key('horizontal-swing') : cmd = 'horizontal-swing'
+            elif xPLmessage.has_key('powerfull') : cmd = 'powerfull'
+            elif xPLmessage.has_key('silent') : cmd = 'silent'
+            elif xPLmessage.has_key('home-leave') : cmd = 'home-leave'
+            elif xPLmessage.has_key('sensor') : cmd = 'sensor'
+            else : 
+                self._log.debug("DaikinRemote object, unknows xPL command : {0}".format(xPLmessage))
+                return
+            if xPLmessage[cmd] == 'on': val = "ON"
+            else : val = "OFF"
+            if self.cmdCode.setCmd(cmd, val) :
+                self.sendToIRdevice();
+                value = xPLmessage[cmd]
+            else : value = self.cmdCode.getCmd(cmd)["value"]
+            data.update({'type': "switch",  'state': value})
         elif xPLmessage['command'] == 'setpoint':
-            self.cmdCode.setCmd("Température", opt = int(xPLmessage['temp']))
-            data = {'device': xPLmessage['device'],  'datatype': xPLmessage['datatype'],  'irtransmitter': xPLmessage['irtransmitter'], 'options': xPLmessage['options'], 
-                                      'type': "setpoint",  'temp': xPLmessage['temp'],  'zone': xPLmessage['zone']}
-            self._manager.sendXplAck(data)
+            if self.cmdCode.setCmd("setpoint", opt = int(xPLmessage['temp'])) :
+                self.sendToIRdevice();
+                value = xPLmessage['temp']
+            else : value = self.cmdCode.getCmd("setpoint")["option"]
+            data.update( {'type': "setpoint",  'temp': value,  'zone': xPLmessage['zone']})
         elif xPLmessage['command'] == 'setmode':
-       #     "Mode Fonctionnement","Ventilation")
-            self.cmdCode.setCmd("Mode Fonctionnement", xPLmessage['mode'])
+            if self.cmdCode.setCmd("setmode", xPLmessage["mode"]) :
+                self.sendToIRdevice();
+                value = xPLmessage['mode']
+            else : value = self.cmdCode.getCmd("setmode")["value"]
+            data.update({'type': "mode",  'mode': value})
         elif xPLmessage['command'] == 'speedfan':
-           #     cmds.setCmd("Vitesse de ventilation", "Automatique")
-            self.cmdCode.setCmd("Vitesse de ventilation", xPLmessage['speed'])
+            if self.cmdCode.setCmd("speedfan", xPLmessage["speed"]) :
+                self.sendToIRdevice();
+                value = xPLmessage['speed']
+            else : value = self.cmdCode.getCmd("speedfan")["value"]
+            data.update({'type': "fan-speed",  'speed': value})
         elif xPLmessage['command'] == 'settime':
-            if xPLmessage.has_key('starttime') :
-                self.cmdCode.setCmd("Heure départ", xPLmessage['starttime'])
-            if xPLmessage.has_key('stoptime') :
-                self.cmdCode.setCmd("Heure de fin", xPLmessage['stoptime'])
-            else : self._log.debug("DaikinRemote object, unknows time definition in xPL command : {0}".format(message))
-        else : self._log.debug("DaikinRemote object, unknows xPL command : {0}".format(message))
+            if xPLmessage.has_key('starttime') : cmd = 'starttime'
+            elif xPLmessage.has_key('stoptime') : cmd = 'stoptime'
+            if self.cmdCode.setCmd(cmd, opt = xPLmessage[cmd]):
+                self.sendToIRdevice();
+                value = xPLmessage[cmd]
+            else : 
+                self._log.debug("DaikinRemote object, unknows time definition in xPL command : {0}".format(xPLmessage))
+                value = self.cmdCode.getCmd(cmd)["option"]
+            data.update({'type': "time",  'time': value})
+        else : 
+            self._log.debug("DaikinRemote object, unknows xPL command : {0}".format(xPLmessage))
+            return
+        self._manager.sendXplAck(data)
             
 if __name__ == "__main__":
     RemoteManager(None,  None)

@@ -7,8 +7,7 @@ from domogik.tests.common.plugintestcase import PluginTestCase
 from domogik.tests.common.testplugin import TestPlugin
 from domogik.tests.common.testdevice import TestDevice
 from domogik.tests.common.testsensor import TestSensor
-
-from testcommand import TestCommand
+from domogik.tests.common.testcommand import TestCommand
 
 from domogik.common.utils import get_sanitized_hostname
 from datetime import datetime
@@ -21,9 +20,8 @@ import time
 
 ### global variables
 DEVICE_NAME="Remote_1"
-DEVICE_IRTRANSMITTER = "IRTrans server"
+DEVICE_IR = "IRTrans_1"
 DEVICE_DATATYPE = "IRTrans standard"
-DEVICE_OPTION = "/user/irtrans"
 
 class DaikincodeTestCase(PluginTestCase):
 
@@ -31,7 +29,7 @@ class DaikincodeTestCase(PluginTestCase):
         self.assertTrue(True)
 
     def test_0110_get_switch_state(self):
-        """ check if the xpl messages about send xpl_cmnd are OK
+        """ check if the xpl messages about get_switch_state are OK
             Sample message : 
             xpl-trig
             {
@@ -39,11 +37,11 @@ class DaikincodeTestCase(PluginTestCase):
             source=domogik-daikcode.domogik-vm1
             target=*
             }
-            daikin.basic
+            sensor.basic
             {
-            device= # Name
-            command= # a command reference
-            key = # command options
+            device=/home
+            device=Daikin remote 1
+            current=19465224
             }
         """
         global device_id
@@ -138,9 +136,9 @@ if __name__ == "__main__":
     # create a test device
     try:
         device_id = td.create_device(client_id, "test_daikcode_remotearc", "daikcode.remotearc")
-        params = {"device" : DEVICE_NAME, "irtransmitter" : DEVICE_IRTRANSMITTER, "datatype": DEVICE_DATATYPE, "options": DEVICE_OPTION}
+        params = {"device" : DEVICE_NAME, "irdevice": DEVICE_IR, "datatype": DEVICE_DATATYPE}
         print (u"configure_global_parameters : {0}".format(params))
-        td.configure_global_parameters({"device" : DEVICE_NAME, "irtransmitter" : DEVICE_IRTRANSMITTER, "datatype": DEVICE_DATATYPE, "options": DEVICE_OPTION})
+        td.configure_global_parameters(params)
     except:
         print(u"Error while creating the test devices : {0}".format(traceback.format_exc()))
         sys.exit(1)

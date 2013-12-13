@@ -70,16 +70,10 @@ class DaikinManager(XplPlugin):
 
         # get the devices list
         self.devices = self.get_device_list(quit_if_no_device = False)
-#        print 'devices' , self.devices
         # get the config values
-        self.remoteManager = RemoteManager(self, self.send_xplTrig)
+        self.remoteManager = RemoteManager(self, self.send_xpl)
         for a_device in self.devices :
             try :
-             #   self.log.debug("device : {0}".format(a_device))
-#                device_name= self.get_parameter_for_feature(a_device, "xpl_stats", "get_switch_state", "device")
-#                irtransmitter = self.get_parameter_for_feature(a_device, "xpl_stats", "get_switch_state", "irtransmitter")
-#                options = self.get_parameter_for_feature(a_device, "xpl_stats", "get_switch_state", "options")
-#                datatype = self.get_parameter_for_feature(a_device, "xpl_stats", "get_switch_state", "datatype")
                 if a_device['device_type_id'] != 'daikcode.remotearc' :
                 #if device_name == None  or irtransmitter == None or options == None :
                     self.log.error(u"No daikcode.remotearc device type")
@@ -108,13 +102,13 @@ class DaikinManager(XplPlugin):
         msg.add_data(data)
         self.myxpl.send(msg)
 
-    def send_xplTrig(self, data):
+    def send_xpl(self, type, schema, data):
         """ Send xPL message on network
         """
-        self.log.debug("Xpl Trig for {0}".format(data))
+        self.log.debug("{0} for {1}".format(type, data))
         msg = XplMessage()
-        msg.set_type("xpl-trig")
-        msg.set_schema("sensor.basic")
+        msg.set_type(type)
+        msg.set_schema(schema)
         msg.add_data(data)
         self.myxpl.send(msg)
         

@@ -5,8 +5,8 @@
 REST_URL="http://192.168.1.195:40405"
 HOST="vmdomogik0"
 DEVICE_NAME="Remote_1"
-DEVICE_IR = "IRTrans_1"
-DEVICE_DATATYPE = "IRTrans standard"
+DEVICE_IR = "IRTrans_ws"
+DEVICE_DATATYPE = "BinTimings"
 ##################################################
 
 from domogik.tests.common.testdevice import TestDevice

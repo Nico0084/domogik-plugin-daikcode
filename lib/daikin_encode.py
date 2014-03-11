@@ -380,8 +380,8 @@ class CodeIRDaikin :
                 
         def encodeCmdIRTrans(self):
             """Encode en ligne ASCII la commande pour format fichier IRTrans"""
-            return  '[T]%d[D]%s' %(self.timing.num,  self.buildBinCodeIR ())
-         #   return  '  [%s][T]%d[D]%s' %(self.nom,  self.timing.num,  self.buildBinCodeIR ())
+#            return  '[T]%d[D]%s' %(self.timing.num,  self.buildBinCodeIR ())
+            return  self.buildBinCodeIR()
 
 
 if __name__ == '__main__' :

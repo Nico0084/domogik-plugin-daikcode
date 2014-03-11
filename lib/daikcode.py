@@ -197,7 +197,7 @@ class DaikinRemote():
         """Send xpl-cmnd to IRTrans Transmitter."""
         # TODO : gérer les datatypes
         data = {"device":  self._device['parameters']["irdevice"]['value'],  "command": "send",  "datatype": self._getDatatype()}
-        if self._getDatatype() == "IRTrans standard" :
+        if self._getDatatype() == "BinTimings" :
             data["code"] = self.cmdCode.encodeCmdIRTrans()
             data["timing"] = self.cmdCode.timing.encodeTimingIRTrans()
             self._manager._cb_send_xPL("xpl-cmnd", "irtrans.basic",  data)

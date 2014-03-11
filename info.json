@@ -6,16 +6,7 @@
             "type" : "daikcode.remoteARC"
         }
     ],
-    "configuration" : [{
-            "default" : false,
-            "description" : "Automatically start the plugin at Domogik startup",
-            "sort" : "0",
-            "key" : "auto_startup",
-            "name" : "Start the plugin with Domogik",
-            "required" : true,
-            "type" : "boolean"
-        }
-    ],
+    "configuration" : [],
     "commands" : {
         "set_on-off" : {
             "name" : "Switch On-Off",

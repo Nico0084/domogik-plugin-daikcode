@@ -89,6 +89,8 @@ class DaikinManager(XplPlugin):
          # Create the xpl listeners
         Listener(self.handle_xpl_cmd, self.myxpl,{'schema': 'daikin.basic',
                                                                         'xpltype': 'xpl-cmnd'})
+        Listener(self.handle_xpl_trig, self.myxpl,{'schema': 'ir.basic',
+                                                                        'xpltype': 'xpl-trig'})
         print "Plugin ready :)"
         self.log.info("Plugin ready :)")
         self.ready()
@@ -112,9 +114,22 @@ class DaikinManager(XplPlugin):
         msg.add_data(data)
         self.myxpl.send(msg)
         
-    def handle_xpl_trig(self, massage):
+    def handle_xpl_trig(self, message):
+        """ Process xpl schema ir.basic
+        """
         self.log.debug("xpl-trig listener received message:{0}".format(message))
-        print message
+        device_name = message.data['device']
+        self.log.debug("device :" + device_name)
+        idsRemote = self.remoteManager.getIdsRemote(device_name)
+        find = False
+        if idsRemote != [] :
+            for id in idsRemote :       
+                remote = self.remoteManager.getRemote(id)
+                if remote :
+                    self.log.debug("Handle xpl-trig for remote :{0}".format(message.data['device']))
+                    find = True
+                    remote.handle_xpl_trig(message.data)
+        if not find : self.log.debug("xpl-trig received for unknowns remote :{0}".format(message.data['device']))
     
     def handle_xpl_cmd(self,  message):
         """ Process xpl schema daikin.basic

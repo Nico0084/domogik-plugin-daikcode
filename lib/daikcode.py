@@ -41,7 +41,7 @@ from domogik.mq.message import MQMessage
 from domogik.common.utils import get_sanitized_hostname
 from domogik_packages.plugin_daikcode.lib.daikin_encode import CodeIRDaikin
 import pprint
-    
+
 def getRemoteId(device):
     """Return key remote id."""
     if device.has_key('name') and device.has_key('id'): 
@@ -205,10 +205,39 @@ class DaikinRemote():
             data["timing"] = self.cmdCode.timing.encodeTimingIRTrans()
             self._manager._cb_send_xPL("xpl-cmnd", "irtrans.basic",  data)
         else : self._log.info (u"datatype : {0} not handled, xpl-cmnd to IR transmitter not send.".format(self._getDatatype()))
-    
+
+    def sendDomogikXplUpdate(self, item):
+        """Send xpl-trig to domogik device."""
+        data =  {"device": self.getDomogikDevice}
+        print item
+        for cmd in item :
+            data.update({'type' :  cmd})
+            if cmd in ['power', 'vertical-swing', 'horizontal-swing', 'powerfull', 'silent',  'home-leave',  'sensor'] :
+               data.update({'state': item[cmd]})
+            elif cmd == 'setmode' : 
+                data.update({'mode': item[cmd]})
+            elif cmd == 'setpoint' : 
+                data.update({'temp': item[cmd]})
+            elif cmd == 'speedfan' : 
+                data.update({'speed': item[cmd]})
+            elif cmd in ['datetime', 'starttime',  'stoptime'] :
+                data.update({'time': item[cmd]})
+            else :
+                data.update({cmd: item[cmd]})
+        print data
+        self._manager._cb_send_xPL('xpl-trig', 'sensor.basic',  data)
+
+    def udpateAllFromCode(self, code):
+        """Update all sensors value from ir code and send xpl-trig."""
+        states = self.cmdCode.decodeCodeBin(code)
+        states["current"].update(states["toUpdate"])
+        for toUpd in states["current"] :
+            self.cmdCode.setCmd(toUpd, states["current"][toUpd])
+            self.sendDomogikXplUpdate({toUpd: states["current"][toUpd]})
+
     def handle_xpl_cmd(self,  xPLmessage):
         """Handle a xpl-cmnd message from hub"""
-        data = {'device': xPLmessage['device'],  'datatype': xPLmessage['datatype']}
+        data = {'device': xPLmessage['device']}
         if xPLmessage['command'] == 'switch' :
             if xPLmessage.has_key('power') : cmd = 'power'
             elif xPLmessage.has_key('vertical-swing') : cmd = 'vertical-swing'
@@ -220,19 +249,17 @@ class DaikinRemote():
             else : 
                 self._log.debug("DaikinRemote object, unknows xPL command : {0}".format(xPLmessage))
                 return
-            if xPLmessage[cmd] == 'on': val = "ON"
-            else : val = "OFF"
-            if self.cmdCode.setCmd(cmd, val) :
+            if self.cmdCode.setCmd(cmd, xPLmessage[cmd]) :
                 self.sendToIRdevice();
                 value = xPLmessage[cmd]
             else : value = self.cmdCode.getCmd(cmd)["value"]
-            data.update({'type': "switch",  'state': value})
+            data.update({'type': cmd,  'state': value})
         elif xPLmessage['command'] == 'setpoint':
-            if self.cmdCode.setCmd("setpoint", opt = int(xPLmessage['temp'])) :
+            if self.cmdCode.setCmd("setpoint", int(xPLmessage['temp'])) :
                 self.sendToIRdevice();
                 value = xPLmessage['temp']
             else : value = self.cmdCode.getCmd("setpoint")["option"]
-            data.update( {'type': "setpoint",  'temp': value,  'zone': xPLmessage['zone']})
+            data.update( {'type': "setpoint",  'temp': value})
         elif xPLmessage['command'] == 'setmode':
             if self.cmdCode.setCmd("setmode", xPLmessage["mode"]) :
                 self.sendToIRdevice();
@@ -242,13 +269,17 @@ class DaikinRemote():
         elif xPLmessage['command'] == 'speedfan':
             if self.cmdCode.setCmd("speedfan", xPLmessage["speed"]) :
                 self.sendToIRdevice();
-                value = xPLmessage['speed']
+                value = xPLmessage['speedfan']
             else : value = self.cmdCode.getCmd("speedfan")["value"]
-            data.update({'type': "fan-speed",  'speed': value})
+            data.update({'type': "speedfan",  'speed': value})
         elif xPLmessage['command'] == 'settime':
             if xPLmessage.has_key('starttime') : cmd = 'starttime'
             elif xPLmessage.has_key('stoptime') : cmd = 'stoptime'
-            if self.cmdCode.setCmd(cmd, opt = xPLmessage[cmd]):
+            elif xPLmessage.has_key('datetime') : 
+                cmd = 'datetime' # TODO : to handle in daikin codage rpi
+                self._log.debug("DaikinRemote object, date time set not handled actually.")
+                return
+            if self.cmdCode.setCmd(cmd, xPLmessage[cmd]):
                 self.sendToIRdevice();
                 value = xPLmessage[cmd]
             else : 
@@ -275,6 +306,11 @@ class DaikinRemote():
                     self._log.debug("DaikinRemote object, unknows xPL Ack trig : {0}".format(message))
             elif message['type'] == 'code_ir':
                 self._log.info("DaikinRemote object receiver an IR Code,  TODO Handling...")
+                states = self.cmdCode.decodeCodeBin(message['code'])
+                for toUpd in states["toUpdate"] :
+                    print "item : {0}, value : {1}".format(toUpd, states["toUpdate"][toUpd])
+                    self.cmdCode.setCmd(toUpd, states["toUpdate"][toUpd])
+                    self.sendDomogikXplUpdate({toUpd: states["toUpdate"][toUpd]})
             else : 
                 self._log.debug("DaikinRemote object receiver unknown type :{0}".format(message['type']))
         else :

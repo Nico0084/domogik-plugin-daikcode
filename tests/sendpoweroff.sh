@@ -1,1 +1,1 @@
-dmg_send xpl-cmnd daikin.basic "device=Remote_1,command=switch,datatype=BinTimings,power=off" 
+dmg_send xpl-cmnd daikin.basic "device=Remote_1,command=switch,datatype=BinTimings,power=Off" 

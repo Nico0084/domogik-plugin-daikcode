@@ -20,8 +20,8 @@ import time
 
 ### global variables
 DEVICE_NAME="Remote_1"
-DEVICE_IR = "IRTrans_1"
-DEVICE_DATATYPE = "IRTrans standard"
+DEVICE_IR = "IRTrans_ws"
+DEVICE_DATATYPE = "BinTimings"
 
 class DaikincodeTestCase(PluginTestCase):
 
@@ -48,15 +48,15 @@ class DaikincodeTestCase(PluginTestCase):
         global xpl_plugin
         
         # do the test
-        print(u"********** start testing xpl command set_on-off.")
-        command = TestCommand(self,  device_id,  'set_on-off')
+        print(u"********** start testing xpl command set_power.")
+        command = TestCommand(self,  device_id,  'set_power')
         print (u'try to send xpl_cmnd fake....')
-        self.assertTrue(command.test_XplCmd({"command" : "switch",  "power" : "on"}, {"state" :"on"}))
+        self.assertTrue(command.test_XplCmd({"command" : "switch",  "power" : "On"}, {"state" :"On"}))
         msg1_time = datetime.now()
         time.sleep(8)
-        print(u"********** start testing xpl command set_temperature.")
-        command2 = TestCommand(self,  device_id,  'set_temperature')
-        self.assertTrue(command2.test_XplCmd({"command" : "setpoint", "temp": 23, "zone" : "id"}, {"temp" : 23,  "zone": "id"}))
+        print(u"********** start testing xpl command set_setpoint.")
+        command2 = TestCommand(self,  device_id,  'set_setpoint')
+        self.assertTrue(command2.test_XplCmd({"command" : "setpoint", "temp": 23}, {"temp" : 23}))
         time.sleep(8)
 
     def assert_Xpl_Stat_Ack_Wait(self, xplMsg) :

@@ -118,17 +118,6 @@
             ],
             "xpl_command" : "set_sensor"
         },
-        "set_date_time" : {
-            "name" : "Stop time",
-            "return_confirmation" : true,
-            "parameters" : [{
-                    "key" : "datetime",
-                    "data_type" : "DT_DateTime",
-                    "conversion" : ""
-                }
-            ],
-            "xpl_command" : "set_date_time"
-        },
         "set_start_time" : {
             "name" : "Start time",
             "return_confirmation" : true,
@@ -283,19 +272,6 @@
                 "device" : []
             }
         },
-        "set_date_time" : {
-            "name" : "define time",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_date_time",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "settime"
-                    }
-                ],
-                "device" : []
-            }
-        },
         "set_start_time" : {
             "name" : "define time",
             "schema" : "daikin.basic",
@@ -343,7 +319,7 @@
             "data_type" : "DT_Switch",
             "conversion" : "",
             "history": {
-                    "store": true,
+                    "store": false,
                     "duplicate": false,
                     "max": 0,
                     "expire": 0,
@@ -356,7 +332,7 @@
             "data_type" : "DT_Switch",
             "conversion" : "",
             "history": {
-                    "store": true,
+                    "store": false,
                     "duplicate": false,
                     "max": 0,
                     "expire": 0,
@@ -369,7 +345,7 @@
             "data_type" : "DT_Switch",
             "conversion" : "",
             "history": {
-                    "store": true,
+                    "store": false,
                     "duplicate": false,
                     "max": 0,
                     "expire": 0,
@@ -382,7 +358,7 @@
             "data_type" : "DT_Switch",
             "conversion" : "",
             "history": {
-                    "store": true,
+                    "store": false,
                     "duplicate": false,
                     "max": 0,
                     "expire": 0,
@@ -395,7 +371,7 @@
             "data_type" : "DT_Switch",
             "conversion" : "",
             "history": {
-                    "store": true,
+                    "store": false,
                     "duplicate": false,
                     "max": 0,
                     "expire": 0,
@@ -408,7 +384,7 @@
             "data_type" : "DT_Switch",
             "conversion" : "",
             "history": {
-                    "store": true,
+                    "store": false,
                     "duplicate": false,
                     "max": 0,
                     "expire": 0,
@@ -447,21 +423,8 @@
             "data_type" : "DT_HVACFan",
             "conversion" : "",
             "history": {
-                    "store": true,
+                    "store": false,
                     "duplicate": false, 
-                    "max": 0,
-                    "expire": 0,
-                    "round_value": 0
-                }
-        },
-        "datetime" : {
-            "name" : "current time" ,
-            "incremental": false,
-            "data_type" : "DT_DateTime",
-            "conversion" : "",
-            "history": {
-                    "store": true,
-                    "duplicate": false,
                     "max": 0,
                     "expire": 0,
                     "round_value": 0
@@ -473,7 +436,7 @@
             "data_type" : "DT_Time",
             "conversion" : "",
             "history": {
-                    "store": true,
+                    "store": false,
                     "duplicate": false,
                     "max": 0,
                     "expire": 0,
@@ -486,7 +449,7 @@
             "data_type" : "DT_Time",
             "conversion" : "",
             "history": {
-                    "store": true,
+                    "store": false,
                     "duplicate": false,
                     "max": 0,
                     "expire": 0,
@@ -645,7 +608,7 @@
             "parameters" : {
                 "static" : [{
                         "key" : "type",
-                        "value" : "mode"
+                        "value" : "setmode"
                     }
 				],
                 "device" : [],
@@ -671,24 +634,6 @@
                         "key" : "speed",
                         "ignore_values" : "",
                         "sensor" : "speedfan"
-                    }
-                ]
-            }
-        },
-        "get_date_time" : {
-            "name" : "get time date",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "time"
-                    }
-				],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "time",
-                        "ignore_values" : "",
-                        "sensor" : "datetime"
                     }
                 ]
             }
@@ -735,8 +680,8 @@
             "description" : "Dakin Inverter remote",
             "id" : "daikcode.remote",
             "name" : "Daikin remote",
-            "commands" : ["set_power", "set_setpoint", "set_mode", "set_vertical_swing", "set_vertical_swing", "set_speedfan", "set_powerfull", "set_silent", "set_home_leave", "set_sensor", "set_date_time", "set_start_time", "set_stop_time"],
-            "sensors" : ["power", "setmode", "setpoint", "vertical_swing", "speedfan", "horizontal_swing", "starttime", "stoptime", "powerfull", "silent", "home_leave", "sensor", "datetime"],
+            "commands" : ["set_power", "set_setpoint", "set_mode", "set_vertical_swing", "set_vertical_swing", "set_speedfan", "set_powerfull", "set_silent", "set_home_leave", "set_sensor", "set_start_time", "set_stop_time"],
+            "sensors" : ["power", "setmode", "setpoint", "vertical_swing", "speedfan", "horizontal_swing", "starttime", "stoptime", "powerfull", "silent", "home_leave", "sensor"],
             "parameters" : [{
                     "key" : "device",
 					"xpl": true,

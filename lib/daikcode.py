@@ -80,8 +80,8 @@ class RemoteManager():
         else:
             self.remotes[name] = DaikinRemote(self,  device,  self._xplPlugin.log)
             self._xplPlugin.log.info(u"Remote Manager : created new remote {0}.".format(name))
-            print "Add remote :"
-            pprint.pprint(device)
+#            print "Add remote :"
+#            pprint.pprint(device)
             return True
         
     def removeRemote(self, name):
@@ -158,7 +158,7 @@ class DaikinRemote():
         """Init remote control type daikin"""
         self._manager = manager
         self._device = device
-        self.cmdCode = CodeIRDaikin(self._device['name'])
+        self.cmdCode = CodeIRDaikin(self,  self._device['name'])
         self._log = log
         self._currentAck = None
              
@@ -209,7 +209,6 @@ class DaikinRemote():
     def sendDomogikXplUpdate(self, item):
         """Send xpl-trig to domogik device."""
         data =  {"device": self.getDomogikDevice}
-        print item
         for cmd in item :
             data.update({'type' :  cmd})
             if cmd in ['power', 'vertical-swing', 'horizontal-swing', 'powerfull', 'silent',  'home-leave',  'sensor'] :
@@ -221,10 +220,9 @@ class DaikinRemote():
             elif cmd == 'speedfan' : 
                 data.update({'speed': item[cmd]})
             elif cmd in ['datetime', 'starttime',  'stoptime'] :
-                data.update({'time': item[cmd]})
+                data.update({'time': self.cmdCode.formatStrDelais(item[cmd])})
             else :
                 data.update({cmd: item[cmd]})
-        print data
         self._manager._cb_send_xPL('xpl-trig', 'sensor.basic',  data)
 
     def udpateAllFromCode(self, code):
@@ -234,6 +232,7 @@ class DaikinRemote():
         for toUpd in states["current"] :
             self.cmdCode.setCmd(toUpd, states["current"][toUpd])
             self.sendDomogikXplUpdate({toUpd: states["current"][toUpd]})
+        self.cmdCode.isUpdate = True
 
     def handle_xpl_cmd(self,  xPLmessage):
         """Handle a xpl-cmnd message from hub"""
@@ -247,7 +246,7 @@ class DaikinRemote():
             elif xPLmessage.has_key('home-leave') : cmd = 'home-leave'
             elif xPLmessage.has_key('sensor') : cmd = 'sensor'
             else : 
-                self._log.debug("DaikinRemote object, unknows xPL command : {0}".format(xPLmessage))
+                self._log.debug(u"DaikinRemote object, unknows xPL command : {0}".format(xPLmessage))
                 return
             if self.cmdCode.setCmd(cmd, xPLmessage[cmd]) :
                 self.sendToIRdevice();
@@ -277,17 +276,17 @@ class DaikinRemote():
             elif xPLmessage.has_key('stoptime') : cmd = 'stoptime'
             elif xPLmessage.has_key('datetime') : 
                 cmd = 'datetime' # TODO : to handle in daikin codage rpi
-                self._log.debug("DaikinRemote object, date time set not handled actually.")
+                self._log.debug(u"DaikinRemote object, date time set not handled actually.")
                 return
             if self.cmdCode.setCmd(cmd, xPLmessage[cmd]):
                 self.sendToIRdevice();
                 value = xPLmessage[cmd]
             else : 
-                self._log.debug("DaikinRemote object, unknows time definition in xPL command : {0}".format(xPLmessage))
+                self._log.debug(u"DaikinRemote object, unknows time definition in xPL command : {0}".format(xPLmessage))
                 value = self.cmdCode.getCmd(cmd)["option"]
             data.update({'type': "time",  'time': value})
         else : 
-            self._log.debug("DaikinRemote object, unknows xPL command : {0}".format(xPLmessage))
+            self._log.debug(u"DaikinRemote object, unknows xPL command : {0}".format(xPLmessage))
             return
 #        self._manager.sendXplAck(data)
         self._currentAck = data
@@ -295,26 +294,29 @@ class DaikinRemote():
     def handle_xpl_trig(self, message):
         """Handle a xpl-trig message from hub"""
         if message.has_key('type'):
-            if message['type'] == 'ack_ir_cmd':
-                if self._currentAck :
-                    if message['result'] == 'ok':
-                        self._manager.sendXplAck(self._currentAck)
+            if message.has_key('device'):
+                if message['type'] == 'ack_ir_cmd' and message['device'] == self.getIRDevice :
+                    if self._currentAck :
+                        if message['result'] == 'ok':
+                            self._manager.sendXplAck(self._currentAck)
+                        else :
+                            self._log.debug(u"DaikinRemote object, Error on ack IRTrans message : {0}, Error : {1}".format(self._currentAck,  message['result']))
+                        self._currentAck =None
                     else :
-                        self._log.debug("DaikinRemote object, Error on ack IRTrans message : {0}, Error : {1}".format(self._currentAck,  message['result']))
-                    self._currentAck =None
-                else :
-                    self._log.debug("DaikinRemote object, unknows xPL Ack trig : {0}".format(message))
-            elif message['type'] == 'code_ir':
-                self._log.info("DaikinRemote object receiver an IR Code,  TODO Handling...")
-                states = self.cmdCode.decodeCodeBin(message['code'])
-                for toUpd in states["toUpdate"] :
-                    print "item : {0}, value : {1}".format(toUpd, states["toUpdate"][toUpd])
-                    self.cmdCode.setCmd(toUpd, states["toUpdate"][toUpd])
-                    self.sendDomogikXplUpdate({toUpd: states["toUpdate"][toUpd]})
-            else : 
-                self._log.debug("DaikinRemote object receiver unknown type :{0}".format(message['type']))
-        else :
-            self._log.debug("DaikinRemote object receiver unknown xpl-trig message : {0}".format(message))
+                        self._log.debug(u"DaikinRemote object, unknows xPL Ack trig : {0}".format(message))
+                elif message['type'] == 'code_ir':
+                    self._log.debug(u"DaikinRemote object receiver an IR Code.")
+                    if not self.cmdCode.isUpdate :
+                        self.udpateAllFromCode(message['code'])
+                    else :
+                        states = self.cmdCode.decodeCodeBin(message['code'])
+                        for toUpd in states["toUpdate"] :
+                            self.cmdCode.setCmd(toUpd, states["toUpdate"][toUpd])
+                            self.sendDomogikXplUpdate({toUpd: states["toUpdate"][toUpd]})
+                else : 
+                    self._log.debug(u"DaikinRemote object not recipient of xpl-trig :{0}".format(message))
+            else :
+                self._log.debug(u"DaikinRemote object receiver unknown xpl-trig message : {0}".format(message))
                 
 if __name__ == "__main__":
     RemoteManager(None,  None)

@@ -35,12 +35,12 @@ Implements
 @organization: Domogik
 """
 import os
+from datetime import datetime, timedelta
+import threading 
 
 # Class objet de codage des codes télécommande Pompe à chaleur DAIKIN
 
 codeConst = "210001000010110111110010000001111000000000000000000000000010000003"
-#cmdsDaikin = ['Inconnue','Pulse de start','ON/OFF','Mode Fonctionnement','Température','Ventilation battante verticale','Vitesse de ventilation','Ventilation battante horizontale',
-#'Heure départ','Heure de fin','Mode powerful','Mode silencieux','Home leave','Sensor','Code de vérification']
 cmdsDaikin = ['Unknown','Pulse start','power','setmode','setpoint','vertical-swing','speedfan','horizontal-swing',
                     'starttime','stoptime','powerfull','silent','home-leave','sensor','Checksun']
 
@@ -50,6 +50,37 @@ class DaikinCodeException(Exception):
     def __init__(self, value):
         self.msg = "DaikinCode lib exception : " + value
         Exception.__init__(self, self.msg)
+
+class TimerDaikin:
+    """Class permettant de gérer le starttime et stoptime de la PAC."""
+    def __init__(self, tempo, duration, cbTempo, cbEnd, args= [], kwargs={}): 
+        self._cbTempo = cbTempo
+        self._cbEnd = cbEnd
+        self._args = args 
+        self._kwargs = kwargs 
+        self._tempo = tempo
+        self._started = None
+        self._duration = duration
+    
+    def _run(self): 
+        self._timer = threading.Timer(self._tempo, self._run) 
+        self._timer.start()
+        duration = int(self._duration - ((timedelta.total_seconds(datetime.now() - self._started)) / 60))
+        if duration <= 0 :
+            self.stop()
+            self._cbEnd(*self._args)
+        else : self._cbTempo(duration,  *self._args)
+ 
+    def start(self): 
+        self._timer = threading.Timer(self._tempo, self._run) 
+        self._started = datetime.now()
+        self._timer.start()
+        
+    def stop(self): 
+        self._timer.cancel()
+    
+    def changeDuration(self,  duration):
+        self._duration = duration
 
 class CmdDaikin:
     """Définition d'une commande type daikin"""
@@ -102,26 +133,24 @@ class CmdDaikin:
 
     def setCurrentValue (self, ord, opt = 0):
         """Définis l'ordre et l'option courant puis renvoi le code IR"""
-        print "update current cmd {0}: {1},  {2}".format(self.cmd,  ord,  opt)
+        print (u"*** Update current cmd {0}: {1},  {2}".format(self.cmd,  ord,  opt))
         self.ordC = ord
         self.opt = opt
         return self.getIRCode (ord, self.opt)
 
     def extractOrdFromBinCode(self, code):
         """Décode l'ordre depuis un code 'binaire sans codeConst'"""
-        val = code[self.offset:self.posFin()]
-        print "\nCommande {0}, valeur extraite : {1}".format(self.cmd, val)
-        for ord in self.ordres :
-            if ord == "Bin2Num":
-                val = "0b" + val[::-1] 
-                print val
-                val = int(val, 2)
-                print "Etat : {0} ({1} / {2})".format(ord,  val,  self.opt)
-                return val
-            elif val == self.ordres[ord] :
-                print "Etat : {0} ({1} / {2})".format(ord,  val,  self.opt)
-                return ord
-        print "not find {0}".format(self.cmd)
+        try :
+            val = code[self.offset:self.posFin()]
+            for ord in self.ordres :
+                if ord == "Bin2Num":
+                    val = "0b" + val[::-1] 
+                    val = int(val, 2)
+                    return val
+                elif val == self.ordres[ord] :
+                    return ord
+        except :
+            pass
         return None
 
 class Timing:
@@ -240,9 +269,9 @@ class Timing:
 
 class Timings :
     """Liste des timings (pulses et pauses)"""
-    def __init__ (self ):
+    def __init__ (self,  log = None ):
         self.lstTimings = []   # Suite des timings
-
+        self._log = log
     def append (self,timing):
         """Ajoute un timing à la liste"""
         self.lstTimings.append (timing)
@@ -252,7 +281,7 @@ class Timings :
         try:
             fich = open (fichier,'r')
         except :
-            print 'error ouverture fichier : ', fichier
+            if self._log : self._log.error(u'Error on openning file : {0}'.format(fichier))
             return 0
         else :
             while 1:
@@ -275,11 +304,15 @@ class Timings :
 
 class CodeIRDaikin :
     """Liste de cmd daikin pour gestion du code complet """
-    def __init__ (self,  nom ='test',  timing = Timing() ):
+    def __init__ (self,  remote,  nom ='test',  timing = Timing()):
         self.lstCmds = []     # Suite des commandes à enchainer
         self.nom =nom        # Nom de la commande
         self.timing=timing    # timing utilisé
-        
+        self._remote = remote
+        self.isUpdate = False
+        self.setDatetime(datetime.now())
+        self.timers = {}
+
         self.lstCmds.append (CmdDaikin (cmdsDaikin [1], 0, 1, {"0" : "2","1" : "5"}, "0"))
         self.lstCmds.append (CmdDaikin (cmdsDaikin [0], 1, 40, {"" : "1000100001011011111001000000000000000000"}, ""))
         self.lstCmds.append (CmdDaikin (cmdsDaikin [2], 41, 1, {"Off" : "0","On" : "1"}, "Off"))
@@ -356,9 +389,11 @@ class CodeIRDaikin :
         """Configure une commande de la liste"""
         id = self.indexCmd(cmd)
         if id != -1 :
-            if cmd in [cmdsDaikin[4], cmdsDaikin [8] , cmdsDaikin [9]] :   
+            if cmd in [cmdsDaikin[4], cmdsDaikin [8] , cmdsDaikin [9]]:
                 ordre = "Bin2Num"
                 opt = value
+                if cmd in [cmdsDaikin [8] , cmdsDaikin [9]] : 
+                    self.handleTimer(cmd, opt)
             else :
                 ordre =value
                 opt = 0
@@ -370,7 +405,10 @@ class CodeIRDaikin :
     def getCmd (self,  cmd = cmdsDaikin [0]):  
         """Retourne l'etat d'une commande dous forme de dict {value, option}"""
         try :
-            return {"value": self.lstCmds[self.indexCmd(cmd)].ordC ,  "option" : self.lstCmds[self.indexCmd(cmd)].opt}   
+            if cmd in [cmdsDaikin [8] , cmdsDaikin [9]] :
+                opt = self.formatStrDelais(self.lstCmds[self.indexCmd(cmd)].opt)
+            else : opt = self.self.lstCmds[self.indexCmd(cmd)].opt
+            return {"value": self.lstCmds[self.indexCmd(cmd)].ordC ,  "option" : opt}   
         except ValueError :
             raise DaikinCodeException(u"Unknows command {0}".format(cmd))
 
@@ -384,7 +422,6 @@ class CodeIRDaikin :
         dataC = code[lgC +1 : posChk]                # extraction de la partie util au calcul du cheksum
         for i  in range (0, len(dataC), 8):             # extraction par pas de 8 bits
             chk=chk + int (dataC[i:i+8][::-1], 2)    # addition des bytes après reverse bits
-        print chk
         return code[0:posChk] + bin(chk)[::-1][0:c.dim] + code[posChk +c.dim:]   # reconstruction de code complet
     
     def labelEtatCmds (self) :
@@ -410,22 +447,67 @@ class CodeIRDaikin :
         """Decode un code 'binaire' entier (avec le codeConst DAIKIN) et renvoie un dict des valeurs courantes et à mettre à jour."""
         lgC = len(codeConst)
         code = codeC[lgC:]
-        print code
         cmdsState = self.labelEtatCmds()
-        print cmdsState
         change ={}
         for cmd in self.lstCmds:
             state = cmd.extractOrdFromBinCode(code)
             if state != None :
                 if cmdsState.has_key(cmd.cmd) :
                     if cmdsState[cmd.cmd] != state:
-                        print "Valeur changée, à updater. {0} / {1}".format(cmdsState[cmd.cmd],  state)
                         change.update({cmd.cmd: state})
-                    else :
-                        print "Valeur à jour."
-                else : print "Commande non implémentée."
         return {'current': cmdsState,  'toUpdate' : change}
-                
+        
+    def setDatetime(self,  date):
+        """Mémorise la delta entre les dates de la PAC et celle du PC."""
+        self.deltaDate = datetime.now() - date
+        
+    def getCurrentDate(self):  
+        """Retourne le date courante supposée de la PAC, calcul par rapport à la dernière date connue."""
+        return datetime.now() - self.deltaDate
+        
+    def getDateByOffset(self, mins):
+        """Retourne la date avec l'offset en mins"""
+        return self.getCurrentDate() + timedelta(minutes = mins)
+
+    def getOffsetByDate(self, date):
+        """Retourne l'offset en mins entre la date courante et une date définie."""
+        return int(timedelta.total_seconds(date - self.getCurrentDate())/ 60)
+    
+    def formatStrDelais(self, mins):
+        """Retourne la date sous forme 'hh:mm:ss.s' avec l'offset en mins"""
+#        return str(timedelta(minutes = mins)) + ".0"
+        if mins == 0 :
+            return "00:00:00.0"
+        else :
+            return self.getDateByOffset(mins).strftime("%H:%M:%S.%f")[:10]
+        
+    def handleTimer(self, name,  duration):
+        if self.timers.has_key(name) : 
+            if duration <= 0 : 
+                self.timers[name].stop()
+                del self.timers[name]
+                return
+        elif duration > 0 : 
+            self.timers[name] = TimerDaikin(60.0, duration, self.updateTimer, self.finishTimer,  [name])
+            self.timers[name].start()
+
+    def updateTimer(self, tps, name): 
+        if tps < 0 : tps =0
+        self.setCmd(name,  int(tps))
+        data =  {"device": self._remote.getDomogikDevice, 'type' :  name, 'time' : self.formatStrDelais(int(tps))}
+        self._remote._manager._cb_send_xPL('xpl-trig', 'sensor.basic',  data)
+    
+    def finishTimer(self, name):
+        print "Timer {0} achévé :)".format(name)
+        data =  {"device": self._remote.getDomogikDevice, 'type' :  name, 'time' : self.formatStrDelais(0)}
+        self._remote._manager._cb_send_xPL('xpl-trig', 'sensor.basic',  data)
+        if name == cmdsDaikin [8]: state ='On'  # starttime
+        else : state ='Off'
+        data =  {"device": self._remote.getDomogikDevice, 'type' :  'power',  'state': state}
+        self._remote._manager._cb_send_xPL('xpl-trig', 'sensor.basic',  data)
+        del self.timers[name]
+        self.setCmd(type,  0)
+       
 if __name__ == '__main__' :
     cmds = CodeIRDaikin()
     a, nb = 0, 23

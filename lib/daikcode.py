@@ -313,6 +313,9 @@ class DaikinRemote():
                         for toUpd in states["toUpdate"] :
                             self.cmdCode.setCmd(toUpd, states["toUpdate"][toUpd])
                             self.sendDomogikXplUpdate({toUpd: states["toUpdate"][toUpd]})
+                elif message['type'] == 'power' and message['device'] == self.getIRDevice :  # En cas de reception de state depuis le IRDevice.
+                    self.cmdCode.setCmd(message['type'], message['state'])
+                    self.sendDomogikXplUpdate({message['type']: message['state']})
                 else : 
                     self._log.debug(u"DaikinRemote object not recipient of xpl-trig :{0}".format(message))
             else :

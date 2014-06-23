@@ -264,11 +264,11 @@ class DaikinRemote():
                 self.sendToIRdevice();
                 value = xPLmessage['mode']
             else : value = self.cmdCode.getCmd("setmode")["value"]
-            data.update({'type': "mode",  'mode': value})
+            data.update({'type': "setmode",  'mode': value})
         elif xPLmessage['command'] == 'speedfan':
             if self.cmdCode.setCmd("speedfan", xPLmessage["speed"]) :
                 self.sendToIRdevice();
-                value = xPLmessage['speedfan']
+                value = xPLmessage['speed']
             else : value = self.cmdCode.getCmd("speedfan")["value"]
             data.update({'type': "speedfan",  'speed': value})
         elif xPLmessage['command'] == 'settime':

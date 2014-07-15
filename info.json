@@ -14,7 +14,7 @@
             "parameters" : [{
                     "key" : "power",
                     "data_type" : "DT_Switch",
-                    "conversion" : ""
+                    "conversion" : "from_DT_Switch_to_switch"
                 }
             ],
             "xpl_command" : "set_power"
@@ -47,21 +47,21 @@
             "parameters" : [{
                     "key" : "vertical-swing",
                     "data_type" : "DT_Switch",
-                    "conversion" : ""
+                    "conversion" : "from_DT_Switch_to_switch"
                 }
             ],
             "xpl_command" : "set_vertical_swing"
         },
-        "set_vertical_swing" : {
+        "set_horizontal_swing" : {
             "name" : "Horizontal swing On-Off",
             "return_confirmation" : true,
             "parameters" : [{
                     "key" : "horizontal-swing",
                     "data_type" : "DT_Switch",
-                    "conversion" : ""
+                    "conversion" : "from_DT_Switch_to_switch"
                 }
             ],
-            "xpl_command" : "set_vertical_swing"
+            "xpl_command" : "set_horizontal_swing"
         },
         "set_speedfan" : {
             "name" : "Select fan speed",
@@ -80,7 +80,7 @@
             "parameters" : [{
                     "key" : "powerfull",
                     "data_type" : "DT_Switch",
-                    "conversion" : ""
+                    "conversion" : "from_DT_Switch_to_switch"
                 }
             ],
             "xpl_command" : "set_powerfull"
@@ -91,7 +91,7 @@
             "parameters" : [{
                     "key" : "silent",
                     "data_type" : "DT_Switch",
-                    "conversion" : ""
+                    "conversion" : "from_DT_Switch_to_switch"
                 }
             ],
             "xpl_command" : "set_silent"
@@ -102,7 +102,7 @@
             "parameters" : [{
                     "key" : "home-leave",
                     "data_type" : "DT_Switch",
-                    "conversion" : ""
+                    "conversion" : "from_DT_Switch_to_switch"
                 }
             ],
             "xpl_command" : "set_home_leave"
@@ -113,7 +113,7 @@
             "parameters" : [{
                     "key" : "sensor",
                     "data_type" : "DT_Switch",
-                    "conversion" : ""
+                    "conversion" : "from_DT_Switch_to_switch"
                 }
             ],
             "xpl_command" : "set_sensor"
@@ -168,7 +168,7 @@
                 "device" : []
             }
         },
-        "set_vertical_swing" : {
+        "set_horizontal_swing" : {
             "name" : "Horizontal swing on-off",
             "schema" : "daikin.basic",
             "xplstat_name" : "get_horizontal_swing",
@@ -304,7 +304,7 @@
             "name" : "Power",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "",
+            "conversion" : "from_switch_to_DT_Switch",
             "history": {
                     "store": true,
                     "duplicate": false,
@@ -317,7 +317,7 @@
             "name" : "Vertical swing",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "",
+            "conversion" : "from_switch_to_DT_Switch",
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -330,7 +330,7 @@
             "name" : "Horizontal swing",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "",
+            "conversion" : "from_switch_to_DT_Switch",
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -343,7 +343,7 @@
             "name" : "Powerfull",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "",
+            "conversion" : "from_switch_to_DT_Switch",
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -356,7 +356,7 @@
             "name" : "Silent mode",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "",
+            "conversion" : "from_switch_to_DT_Switch",
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -369,7 +369,7 @@
             "name" : "Home leave mode",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "",
+            "conversion" : "from_switch_to_DT_Switch",
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -382,7 +382,7 @@
             "name" : "Sensor mode",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "",
+            "conversion" : "from_switch_to_DT_Switch",
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -680,7 +680,7 @@
             "description" : "Dakin Inverter remote",
             "id" : "daikcode.remote",
             "name" : "Daikin remote",
-            "commands" : ["set_power", "set_setpoint", "set_mode", "set_vertical_swing", "set_vertical_swing", "set_speedfan", "set_powerfull", "set_silent", "set_home_leave", "set_sensor", "set_start_time", "set_stop_time"],
+            "commands" : ["set_power", "set_setpoint", "set_mode", "set_vertical_swing", "set_horizontal_swing", "set_speedfan", "set_powerfull", "set_silent", "set_home_leave", "set_sensor", "set_start_time", "set_stop_time"],
             "sensors" : ["power", "setmode", "setpoint", "vertical_swing", "speedfan", "horizontal_swing", "starttime", "stoptime", "powerfull", "silent", "home_leave", "sensor"],
             "parameters" : [{
                     "key" : "device",

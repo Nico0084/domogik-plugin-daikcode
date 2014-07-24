@@ -23,9 +23,9 @@ def create_device():
     params["name"] = "test_daikcode.remotearc"
     params["reference"] = "ARC Remote"
     params["description"] = "Connected to {0}".format(DEVICE_IR)
-    for idx, val in enumerate(params['no-xpl']):
-        if params['no-xpl'][idx]['key'] == 'irdevice' :  params['no-xpl'][idx]['value'] = DEVICE_IR
-        if params['no-xpl'][idx]['key'] == 'datatype' :  params['no-xpl'][idx]['value'] = DEVICE_DATATYPE
+    for idx, val in enumerate(params['global']):
+        if params['global'][idx]['key'] == 'irdevice' :  params['global'][idx]['value'] = DEVICE_IR
+        if params['global'][idx]['key'] == 'datatype' :  params['global'][idx]['value'] = DEVICE_DATATYPE
 
     for idx, val in enumerate(params['xpl']):
         params['xpl'][idx]['value'] = DEVICE_NAME

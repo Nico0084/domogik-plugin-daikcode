@@ -1,10 +1,10 @@
-.. _index:
+.. _toc:
 
 ================
 Table of content
 ================
+.. toctree::
 
-* :doc:`Plugin documentation </daikcode>`
-* :doc:`Change log</changelog>`
-
-
+    /daikcode
+    /dev
+    /changelog

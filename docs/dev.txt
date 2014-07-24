@@ -1,0 +1,120 @@
+========================
+Development informations
+========================
+
+How it work ?
+=============
+
+Infrared code is generated for each command, he is calculate with internal state values of all DAIKIN commands.
+This is necessary because all commands must be transmit to DAIKIN PAC 
+The plugin use clients (irdevice) who send message through IR TRansceiver service.
+It could be any web service or hardware
+Clients service are register by plugin irdevice) and communicat with xpl message.
+Header defined in plugin configuration is added at the top of message.
+
+xPL messages
+============
+
+xpl-stat
+--------
+
+n/a
+
+xpl-trig
+--------
+
+The **sensor.basic** message is used
+************************************
+
+sensor is used to get remote command status
+
+::
+
+    xpl-trig
+    {
+    ...
+    }
+    sensor.basic
+    {
+    device = <remote device>
+    type = <The type of sensor : ['power','setmode','setpoint','vertical-swing','speedfan','horizontal-swing', 'starttime','stoptime','powerfull','silent','home-leave','sensor']>
+    <state, temp, speed, time (depending og type) =<value>
+    }
+    
+The **ir.basic** message is used
+********************************
+
+This schema is used to receive xpl information of IR TRansceiver. It depend of IR TRansceiver capabilities.
+3 types are used:
+
+::
+    xpl-trig
+    {
+    ...
+    }
+    ir.basic
+    {
+    device = <irdevice>
+    type = ack_ir_cmd < A acknowledge of last command. >
+    result = ok < Or error message if fail. >
+    }
+    
+::
+    xpl-trig
+    {
+    ...
+    }
+    ir.basic
+    {
+    device = <irdevice>
+    type = code_ir < A code ir transmited by IR TRansceiver. >
+    code = <the InfraRed code, must according to datatype of device>
+    }   
+ 
+::
+    xpl-trig
+    {
+    ...
+    }
+    ir.basic
+    {
+    device = <irdevice>
+    type = power <A state of power received by IR TRansceiver. >
+    state = <'On' , 'Off' (Real hardware state of DAIKIN PAC). >
+    }
+    
+xpl-cmnd
+--------
+::
+
+    xpl-cmnd
+    {
+    ...
+    }
+    daikin.basic
+    {
+    device = <remote device>
+    datatype = <BinTimings, IRHexa, IRRaw>
+    command = <switch, setpoint, setmode, speedfan, settime>
+    <power, mode, temp, speed, vertical-swing, horizontal-swing, powerfull, silent, home-leave, sensor, starttime, stoptime> (depending of command) = <value>
+    }
+
+schema **irtrans.basic** is used
+********************************
+
+To transmit infrared code to IR TRansceiver, plugin send an xpl_cmnd :
+
+::
+    xpl-cmnd
+    {
+    ...
+    }
+    irtrans.basic
+    {
+    device = <irdevice>
+    command = send
+    datatype= <BinTimings, IRHexa, IRRaw>
+    code=< The IR code to tranmist. >
+    [timing] = <in case of BinTimings the list of timings (optional)>
+    }
+

@@ -1,0 +1,64 @@
+====================
+Plugin documentation
+====================
+
+.. |icon| image:: icon.png
+    :width: 64px
+
+|icon|
+
+Last change
+===========
+New instructions to apply changes from immediatly previous version.
+
+- 0.1a0 : (28-05-2014) First published version
+    - Target :
+    - Change log :
+        - Update doc
+
+- `Previous change <changelog.html>`_
+
+Purpose
+=======
+This Domogik plugin to generate control code for the IR protocol DAIKIN air conditioners.
+
+* Work with `irtrans plugin <http://github.com/Nico0084/domogik-plugin-irtrans>`_ who send IR code to hardware device.
+* Work with any xpl client that respect the protocol described in the developer page.
+
+Plugin configuration
+====================
+Configuration
+-------------
+In Domogik administration section, go to client plugin-daikcode details page.
+
++----------------+---------------+--------------------------------------------------------------------------------------+
+|Key             | Default value | Description                                                                          |
++================+===============+======================================================================================+
+| startup-plugin | false         | Automatically start plugin at Domogik startup                                        |
++----------------+---------------+--------------------------------------------------------------------------------------+
+
+
+Creating devices for remote Client
+----------------------------------
+In clients page of admin UI, go to **plugin-daikcode-<your_host_domogik>**, select tab **"Devices"**, **"New"** to create your devices.
+
+Chose one way creation by product or instance type.
+
+Instance-type : daikcode.remotearc
+**********************************
+
++-------------------+-------------------+------------------------------------------------------------------------------+
+| Key               | Example           | Description                                                                  |
++===================+===================+==============================================================================+
+| Device            | My_Remote         | The display name for this device.                                            |
++-------------------+-------------------+------------------------------------------------------------------------------+
+| Description       | What you want     | A short descriptionn for this device.                                        |
++-------------------+-------------------+------------------------------------------------------------------------------+
+| Global irdevice   | My_IRDevice       | IRtransmitter Domogik (or other) device (could be an plugin-irtrans device). |
++-------------------+-------------------+------------------------------------------------------------------------------+
+| Global datatype   |  BinTimmings      | Select the datatype that will be send in xpl, choice :                       |
+|                   |                   |   - BinTimings (a list of index values of pulse/pause pairs)                 |
+|                   |                   |   - IRHexa (a hexadicimal code                                               |
+|                   |                   |   - IRRaw  ( a list of pulse/pause pairs)                                    |
++-------------------+-------------------+------------------------------------------------------------------------------+
+

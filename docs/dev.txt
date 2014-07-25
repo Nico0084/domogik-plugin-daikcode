@@ -48,6 +48,7 @@ This schema is used to receive xpl information of IR TRansceiver. It depend of I
 3 types are used:
 
 ::
+
     xpl-trig
     {
     ...
@@ -60,6 +61,7 @@ This schema is used to receive xpl information of IR TRansceiver. It depend of I
     }
     
 ::
+
     xpl-trig
     {
     ...
@@ -72,6 +74,7 @@ This schema is used to receive xpl information of IR TRansceiver. It depend of I
     }   
  
 ::
+
     xpl-trig
     {
     ...
@@ -105,6 +108,7 @@ schema **irtrans.basic** is used
 To transmit infrared code to IR TRansceiver, plugin send an xpl_cmnd :
 
 ::
+
     xpl-cmnd
     {
     ...

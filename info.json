@@ -305,6 +305,7 @@
             "incremental": false,
             "data_type" : "DT_Switch",
             "conversion" : "from_switch_to_DT_Switch",
+            "timeout": 0,
             "history": {
                     "store": true,
                     "duplicate": false,
@@ -318,6 +319,7 @@
             "incremental": false,
             "data_type" : "DT_Switch",
             "conversion" : "from_switch_to_DT_Switch",
+            "timeout": 0,
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -331,6 +333,7 @@
             "incremental": false,
             "data_type" : "DT_Switch",
             "conversion" : "from_switch_to_DT_Switch",
+            "timeout": 0,
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -344,6 +347,7 @@
             "incremental": false,
             "data_type" : "DT_Switch",
             "conversion" : "from_switch_to_DT_Switch",
+            "timeout": 0,
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -357,6 +361,7 @@
             "incremental": false,
             "data_type" : "DT_Switch",
             "conversion" : "from_switch_to_DT_Switch",
+            "timeout": 0,
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -370,6 +375,7 @@
             "incremental": false,
             "data_type" : "DT_Switch",
             "conversion" : "from_switch_to_DT_Switch",
+            "timeout": 0,
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -383,6 +389,7 @@
             "incremental": false,
             "data_type" : "DT_Switch",
             "conversion" : "from_switch_to_DT_Switch",
+            "timeout": 0,
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -396,6 +403,7 @@
             "incremental": false,
             "data_type" : "DT_Temp",
             "conversion" : "",
+            "timeout": 0,
             "history": {
                     "store": true,
                     "duplicate": false,
@@ -409,6 +417,7 @@
             "incremental": false,
             "data_type" : "DT_HVACVent",
             "conversion" : "",
+            "timeout": 0,
             "history": {
                     "store": true,
                     "duplicate": false,
@@ -422,6 +431,7 @@
             "incremental": false,
             "data_type" : "DT_HVACFan",
             "conversion" : "",
+            "timeout": 0,
             "history": {
                     "store": false,
                     "duplicate": false, 
@@ -435,6 +445,7 @@
             "incremental": false,
             "data_type" : "DT_Time",
             "conversion" : "",
+            "timeout": 0,
             "history": {
                     "store": false,
                     "duplicate": false,
@@ -448,6 +459,7 @@
             "incremental": false,
             "data_type" : "DT_Time",
             "conversion" : "",
+            "timeout": 0,
             "history": {
                     "store": false,
                     "duplicate": false,

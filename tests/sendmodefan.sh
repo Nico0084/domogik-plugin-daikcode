@@ -1,1 +1,1 @@
-dmg_send xpl-cmnd daikin.basic "device=Remote_1,command=speedfan,datatype=BinTimings,speed=Speed 3" 
+dmg_send xpl-cmnd daikin.basic "device=Remote_1,command=speedfan,speed=Speed 3" 

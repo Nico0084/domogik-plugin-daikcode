@@ -726,7 +726,7 @@
         "description" : "Generate Daikin code IR",
         "domogik_min_version" : "0.4.0",
         "name" : "daikcode",
-         "type" : "plugin",
+        "type" : "plugin",
         "version" : "0.1a0"
     },
     "json_version" : 2

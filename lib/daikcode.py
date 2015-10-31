@@ -35,12 +35,10 @@ Implements
 @organization: Domogik
 """
 import zmq
-from zmq.eventloop.ioloop import IOLoop
-from domogik.mq.reqrep.client import MQSyncReq
-from domogik.mq.message import MQMessage
+from domogikmq.reqrep.client import MQSyncReq
+from domogikmq.message import MQMessage
 from domogik.common.utils import get_sanitized_hostname
 from domogik_packages.plugin_daikcode.lib.daikin_encode import CodeIRDaikin
-import pprint
 
 def getRemoteId(device):
     """Return key remote id."""

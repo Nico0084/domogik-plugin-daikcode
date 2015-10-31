@@ -39,11 +39,8 @@ try:
     from domogik.xpl.common.xplconnector import Listener
     from domogik.xpl.common.xplmessage import XplMessage
     from domogik.xpl.common.plugin import XplPlugin
-    from domogik.mq.reqrep.client import MQSyncReq
-    from domogik.mq.message import MQMessage
 
     from domogik_packages.plugin_daikcode.lib.daikcode import RemoteManager,  getRemoteId
-    import threading
     import traceback
 except ImportError as exc :
     import logging

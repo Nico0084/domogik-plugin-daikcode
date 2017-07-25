@@ -7,28 +7,38 @@
         }
     ],
     "configuration" : [],
+    "xpl_commands" : {},
+    "xpl_stats" : {},
     "commands" : {
+        "send_full_cmd":{
+            "name" : "Send full command",
+            "return_confirmation" : true,
+            "parameters" : [{
+                    "key" : "send",
+                    "data_type" : "DT_Bool",
+                    "conversion" : ""
+                }
+            ]
+        },
         "set_power" : {
             "name" : "Power On-Off",
             "return_confirmation" : true,
             "parameters" : [{
                     "key" : "power",
                     "data_type" : "DT_Switch",
-                    "conversion" : "from_DT_Switch_to_switch"
+                    "conversion" : ""
                 }
-            ],
-            "xpl_command" : "set_power"
+            ]
         },
         "set_setpoint" : {
             "name" : "Temperature setpoint ",
             "return_confirmation" : true,
             "parameters" : [{
-                    "key" : "temp",
+                    "key" : "setpoint",
                     "data_type" : "DT_Temp",
                     "conversion" : ""
                 }
-            ],
-            "xpl_command" : "set_setpoint"
+            ]
         },
         "set_mode" : {
             "name" : "Select Mode ",
@@ -38,52 +48,47 @@
                     "data_type" : "DT_HVACVent",
                     "conversion" : ""
                 }
-            ],
-            "xpl_command" : "set_mode"
+            ]
         },
         "set_vertical_swing" : {
             "name" : "Vertical swing On-Off",
             "return_confirmation" : true,
             "parameters" : [{
-                    "key" : "vertical-swing",
+                    "key" : "vertical_swing",
                     "data_type" : "DT_Switch",
-                    "conversion" : "from_DT_Switch_to_switch"
+                    "conversion" : ""
                 }
-            ],
-            "xpl_command" : "set_vertical_swing"
+            ]
         },
         "set_horizontal_swing" : {
             "name" : "Horizontal swing On-Off",
             "return_confirmation" : true,
             "parameters" : [{
-                    "key" : "horizontal-swing",
+                    "key" : "horizontal_swing",
                     "data_type" : "DT_Switch",
-                    "conversion" : "from_DT_Switch_to_switch"
+                    "conversion" : ""
                 }
-            ],
-            "xpl_command" : "set_horizontal_swing"
+            ]
         },
         "set_speedfan" : {
             "name" : "Select fan speed",
             "return_confirmation" : true,
             "parameters" : [{
-                    "key" : "speed",
+                    "key" : "speedfan",
                     "data_type" : "DT_HVACFan",
                     "conversion" : ""
                 }
-            ],
-            "xpl_command" : "set_speedfan"
+            ]
         },
         "set_powerfull" : {
             "name" : "Powerfull On-Off",
             "return_confirmation" : true,
             "parameters" : [{
                     "key" : "powerfull",
-                    "data_type" : "DT_Switch",
-                    "conversion" : "from_DT_Switch_to_switch"
+                    "data_type" : "DT_Trigger",
+                    "conversion" : ""
                 }
-            ],
-            "xpl_command" : "set_powerfull"
+            ]
         },
         "set_silent" : {
             "name" : "Silent On-off",
@@ -91,10 +96,9 @@
             "parameters" : [{
                     "key" : "silent",
                     "data_type" : "DT_Switch",
-                    "conversion" : "from_DT_Switch_to_switch"
+                    "conversion" : ""
                 }
-            ],
-            "xpl_command" : "set_silent"
+            ]
         },
         "set_home_leave" : {
             "name" : "Home leave On-Off",
@@ -102,10 +106,9 @@
             "parameters" : [{
                     "key" : "home-leave",
                     "data_type" : "DT_Switch",
-                    "conversion" : "from_DT_Switch_to_switch"
+                    "conversion" : ""
                 }
-            ],
-            "xpl_command" : "set_home_leave"
+            ]
         },
         "set_sensor" : {
             "name" : "Sensor On-Off",
@@ -113,10 +116,9 @@
             "parameters" : [{
                     "key" : "sensor",
                     "data_type" : "DT_Switch",
-                    "conversion" : "from_DT_Switch_to_switch"
+                    "conversion" : ""
                 }
-            ],
-            "xpl_command" : "set_sensor"
+            ]
         },
         "set_start_time" : {
             "name" : "Start time",
@@ -126,8 +128,7 @@
                     "data_type" : "DT_Time",
                     "conversion" : ""
                 }
-            ],
-            "xpl_command" : "set_start_time"
+            ]
         },
         "set_stop_time" : {
             "name" : "Stop time",
@@ -137,174 +138,29 @@
                     "data_type" : "DT_Time",
                     "conversion" : ""
                 }
-            ],
-            "xpl_command" : "set_stop_time"
-        }
-    },
-    "xpl_commands" : {
-        "set_power" : {
-            "name" : "Power on-off",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_power",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "switch"
-                    }
-                ],
-                "device" : []
-            }
-        },
-        "set_vertical_swing" : {
-            "name" : "Vertical swing on-off",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_vertical_swing",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "switch"
-                    }
-                ],
-                "device" : []
-            }
-        },
-        "set_horizontal_swing" : {
-            "name" : "Horizontal swing on-off",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_horizontal_swing",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "switch"
-                    }
-                ],
-                "device" : []
-            }
-        },
-        "set_powerfull" : {
-            "name" : "Powerfull on-off",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_powerfull",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "switch"
-                    }
-                ],
-                "device" : []
-            }
-        },
-        "set_silent" : {
-            "name" : "Silent on-off",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_silent",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "switch"
-                    }
-                ],
-                "device" : []
-            }
-        },
-        "set_home_leave" : {
-            "name" : "Home leave on-off",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_home_leave",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "switch"
-                    }
-                ],
-                "device" : []
-            }
-        },
-        "set_sensor" : {
-            "name" : "Sensor on-off",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_sensor",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "switch"
-                    }
-                ],
-                "device" : []
-            }
-        },
-        "set_setpoint" : {
-            "name" : "Setpoint temperature",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_setpoint_temp",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "setpoint"
-                    }
-                ],
-                "device" : []
-            }
-        },
-        "set_mode" : {
-            "name" : "Select Mode",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_mode",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "setmode"
-                    }
-                ],
-                "device" : []
-            }
-        },
-        "set_speedfan" : {
-            "name" : "Select fan speed",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_speedfan",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "speedfan"
-                    }
-                ],
-                "device" : []
-            }
-        },
-        "set_start_time" : {
-            "name" : "define time",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_start_time",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "settime"
-                    }
-                ],
-                "device" : []
-            }
-        },
-        "set_stop_time" : {
-            "name" : "define time",
-            "schema" : "daikin.basic",
-            "xplstat_name" : "get_stop_time",
-            "parameters" : {
-                "static" : [{
-                        "key" : "command",
-                        "value" : "settime"
-                    }
-                ],
-                "device" : []
-            }
+            ]
         }
     },
     "sensors" : {
+        "cmd_status" : {
+            "name" : "status full command",
+            "incremental": false,
+            "data_type" : "DT_String",
+            "conversion" : "",
+            "timeout": 0,
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+                }
+        },
         "power" : {
             "name" : "Power",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "from_switch_to_DT_Switch",
+            "conversion" : "",
             "timeout": 0,
             "history": {
                     "store": true,
@@ -318,7 +174,7 @@
             "name" : "Vertical swing",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "from_switch_to_DT_Switch",
+            "conversion" : "",
             "timeout": 0,
             "history": {
                     "store": false,
@@ -332,7 +188,7 @@
             "name" : "Horizontal swing",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "from_switch_to_DT_Switch",
+            "conversion" : "",
             "timeout": 0,
             "history": {
                     "store": false,
@@ -346,7 +202,7 @@
             "name" : "Powerfull",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "from_switch_to_DT_Switch",
+            "conversion" : "",
             "timeout": 0,
             "history": {
                     "store": false,
@@ -360,7 +216,7 @@
             "name" : "Silent mode",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "from_switch_to_DT_Switch",
+            "conversion" : "",
             "timeout": 0,
             "history": {
                     "store": false,
@@ -374,7 +230,7 @@
             "name" : "Home leave mode",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "from_switch_to_DT_Switch",
+            "conversion" : "",
             "timeout": 0,
             "history": {
                     "store": false,
@@ -388,7 +244,7 @@
             "name" : "Sensor mode",
             "incremental": false,
             "data_type" : "DT_Switch",
-            "conversion" : "from_switch_to_DT_Switch",
+            "conversion" : "",
             "timeout": 0,
             "history": {
                     "store": false,
@@ -412,7 +268,7 @@
                     "round_value": 0
                 }
         },
-        "setmode" : {
+        "mode" : {
             "name" : "HVAC mode",
             "incremental": false,
             "data_type" : "DT_HVACVent",
@@ -434,7 +290,7 @@
             "timeout": 0,
             "history": {
                     "store": false,
-                    "duplicate": false, 
+                    "duplicate": false,
                     "max": 0,
                     "expire": 0,
                     "round_value": 0
@@ -469,241 +325,18 @@
                 }
         }
     },
-    "xpl_stats" : {
-        "get_power" : {
-            "name" : "get power state",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "power"
-                    }
-                ],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "state",
-                        "ignore_values" : "",
-                        "sensor" : "power"
-                    }
-                ]
-            }
-        },
-        "get_vertical_swing" : {
-            "name" : "get vertical swing state",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "vertical-swing"
-                    }
-                ],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "state",
-                        "ignore_values" : "",
-                        "sensor" : "vertical_swing"
-                    }
-                ]
-            }
-        },
-        "get_horizontal_swing" : {
-            "name" : "get horizontal swing state",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "horizontal-swing"
-                    }
-                ],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "state",
-                        "ignore_values" : "",
-                        "sensor" : "horizontal_swing"
-                    }
-                ]
-            }
-        },
-        "get_powerfull" : {
-            "name" : "get powerfull state",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "powerfull"
-                    }
-                ],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "state",
-                        "ignore_values" : "",
-                        "sensor" : "powerfull"
-                    }
-                ]
-            }
-        },
-        "get_silent" : {
-            "name" : "get silent state",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "silent"
-                    }
-                ],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "state",
-                        "ignore_values" : "",
-                        "sensor" : "silent"
-                    }
-                ]
-            }
-        },
-        "get_home_leave" : {
-            "name" : "get home leave state",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "home-leave"
-                    }
-                ],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "state",
-                        "ignore_values" : "",
-                        "sensor" : "home_leave"
-                    }
-                ]
-            }
-        },
-        "get_sensor" : {
-            "name" : "get sensor state",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "sensor"
-                    }
-                ],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "state",
-                        "ignore_values" : "",
-                        "sensor" : "sensor"
-                    }
-                ]
-            }
-        },
-        "get_setpoint_temp" : {
-            "name" : "get setpoint temperature",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "setpoint"
-                    }
-				],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "temp",
-                        "ignore_values" : "",
-                        "sensor" : "setpoint"
-                    }
-                ]
-            }
-        },
-        "get_mode" : {
-            "name" : "get mode",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "setmode"
-                    }
-				],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "mode",
-                        "ignore_values" : "",
-                        "sensor" : "setmode"
-                    }
-                ]
-            }
-        },
-        "get_speedfan" : {
-            "name" : "get fan speed",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "speedfan"
-                    }
-				],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "speed",
-                        "ignore_values" : "",
-                        "sensor" : "speedfan"
-                    }
-                ]
-            }
-        },
-        "get_start_time" : {
-            "name" : "get start time",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "starttime"
-                    }
-				],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "time",
-                        "ignore_values" : "",
-                        "sensor" : "starttime"
-                    }
-                ]
-            }
-        },
-        "get_stop_time" : {
-            "name" : "get stop time",
-            "schema" : "sensor.basic",
-            "parameters" : {
-                "static" : [{
-                        "key" : "type",
-                        "value" : "stoptime"
-                    }
-				],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "time",
-                        "ignore_values" : "",
-                        "sensor" : "stoptime"
-                    }
-                ]
-            }
-        }
-    },
     "device_types" : {
         "daikcode.remotearc" : {
             "description" : "Dakin Inverter remote",
             "id" : "daikcode.remote",
             "name" : "Daikin remote",
-            "commands" : ["set_power", "set_setpoint", "set_mode", "set_vertical_swing", "set_horizontal_swing", "set_speedfan", "set_powerfull", "set_silent", "set_home_leave", "set_sensor", "set_start_time", "set_stop_time"],
-            "sensors" : ["power", "setmode", "setpoint", "vertical_swing", "speedfan", "horizontal_swing", "starttime", "stoptime", "powerfull", "silent", "home_leave", "sensor"],
+            "commands" : ["send_full_cmd", "set_power", "set_setpoint", "set_mode", "set_vertical_swing", "set_horizontal_swing", "set_speedfan", "set_powerfull", "set_silent", "set_home_leave", "set_sensor", "set_start_time", "set_stop_time"],
+            "sensors" : ["power", "mode", "setpoint", "vertical_swing", "speedfan", "horizontal_swing", "starttime", "stoptime", "powerfull", "silent", "home_leave", "sensor"],
             "parameters" : [{
-                    "key" : "device",
-					"xpl": true,
-                    "description" : "Daikin remote unit identification",
-                    "type" : "string"
-                }, {
-                    "key" : "irdevice",
+                    "key" : "IRDmgDevice",
 					"xpl": false,
-                    "description" : "IRtransmitter Domogik device",
-                    "type" : "string"
+                    "description" : "IRtransmitter Domogik device id",
+                    "type" : "integer"
                 }, {
                     "key" : "datatype",
 					"xpl": false,
@@ -722,12 +355,16 @@
         "author" : "Nico0084",
         "author_email" : "nico84dev at gmail.com",
         "tags" : ["air conditionning"],
-        "dependencies" : [],
+        "dependencies" : [{
+                "id" : "ws4py (>=0.3.0)",
+                "type" : "python"
+            }
+        ],
         "description" : "Generate Daikin code IR",
-        "domogik_min_version" : "0.4.0",
+        "domogik_min_version" : "0.5.0",
         "name" : "daikcode",
         "type" : "plugin",
-        "version" : "0.1a0"
+        "version" : "0.2"
     },
     "json_version" : 2
 }

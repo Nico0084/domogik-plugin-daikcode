@@ -36,13 +36,13 @@ Implements
 """
 import os
 from datetime import datetime, timedelta
-import threading 
+import threading
 
 # Class objet de codage des codes télécommande Pompe à chaleur DAIKIN
 
 codeConst = "210001000010110111110010000001111000000000000000000000000010000003"
-cmdsDaikin = ['Unknown','Pulse start','power','setmode','setpoint','vertical-swing','speedfan','horizontal-swing',
-                    'starttime','stoptime','powerfull','silent','home-leave','sensor','Checksun']
+cmdsDaikin = ['Unknown','Pulse start','power','mode','setpoint','vertical_swing','speedfan','horizontal_swing',
+                    'starttime','stoptime','powerfull','silent','home_leave','sensor','Checksun']
 
 class DaikinCodeException(Exception):
     """"DaikinCode lib exception  class"""
@@ -53,17 +53,17 @@ class DaikinCodeException(Exception):
 
 class TimerDaikin:
     """Class permettant de gérer le starttime et stoptime de la PAC."""
-    def __init__(self, tempo, duration, cbTempo, cbEnd, args= [], kwargs={}): 
+    def __init__(self, tempo, duration, cbTempo, cbEnd, args= [], kwargs={}):
         self._cbTempo = cbTempo
         self._cbEnd = cbEnd
-        self._args = args 
-        self._kwargs = kwargs 
+        self._args = args
+        self._kwargs = kwargs
         self._tempo = tempo
         self._started = None
         self._duration = duration
 
-    def _run(self): 
-        self._timer = threading.Timer(self._tempo, self._run) 
+    def _run(self):
+        self._timer = threading.Timer(self._tempo, self._run)
         self._timer.start()
         duration = int(self._duration - ((timedelta.total_seconds(datetime.now() - self._started)) / 60))
         if duration <= 0 :
@@ -71,12 +71,12 @@ class TimerDaikin:
             self._cbEnd(*self._args)
         else : self._cbTempo(duration,  *self._args)
 
-    def start(self): 
-        self._timer = threading.Timer(self._tempo, self._run) 
+    def start(self):
+        self._timer = threading.Timer(self._tempo, self._run)
         self._started = datetime.now()
         self._timer.start()
 
-    def stop(self): 
+    def stop(self):
         self._timer.cancel()
 
     def changeDuration(self,  duration):
@@ -100,7 +100,7 @@ class CmdDaikin:
     def getIRCode (self, ordre = "", opt = 0):
         """Renvoi le code IR en fonction de la commande et de l'ordre \
             Doit-être appelé par la méthode de la class CodeIRDaikin.buildBinCodeIR() \
-            pour géré les exceptions des températures."""
+            pour gérer les exceptions des températures."""
         cir=""
         if ordre == "" : ordre = self.ordC
         if self.cmd in [cmdsDaikin [2], cmdsDaikin [5], cmdsDaikin [7], cmdsDaikin [10], cmdsDaikin [11], cmdsDaikin [12], cmdsDaikin [13]]:
@@ -109,11 +109,14 @@ class CmdDaikin:
         if self.cmd == cmdsDaikin [0] :             # c'est une commande inconnue
                 cir = self.ordres[""]
         elif self.cmd == cmdsDaikin [4] or self.cmd == cmdsDaikin [8] or self.cmd == cmdsDaikin [9]:   # c'est une température, l'heure de départ, l'heure de fin.
-                cir=bin(opt)[2:]            # codage binaire de opt
+                cir=bin(opt)[2:]
+                print(cir, type(cir))
+                # codage binaire de opt
                 if len(cir) < self.dim :    # La température ou en minutes depuis l'heure courant entre 0 et 1440 mns (24h00)
                     while int((self.dim)) - len(cir) > 0 :
                            cir ='0' + cir
                 cir = cir[::-1]                # Reverse pour codage DAIKIN
+                print(cir,  type(cir))
         elif ordre in self.ordres.keys() :            # Toute autre commande codée dans le dictionnaire
                 cir = self.ordres[ordre]
         return cir
@@ -136,10 +139,10 @@ class CmdDaikin:
 
     def setCurrentValue (self, ord, opt = 0):
         """Définis l'ordre et l'option courant puis renvoi le code IR"""
-        print (u"*** Update current cmd {0}: {1},  {2}".format(self.cmd,  ord,  opt))
+        print (u"*** Update current cmd {0}: {1}, option {2}".format(self.cmd, ord, opt))
         self.ordC = ord
         self.opt = opt
-        return self.getIRCode (ord, self.opt)
+        return self.getIRCode(ord, self.opt)
 
     def extractOrdFromBinCode(self, code):
         """Décode l'ordre depuis un code 'binaire sans codeConst'"""
@@ -147,8 +150,11 @@ class CmdDaikin:
             val = code[self.offset:self.posFin()]
             for ord in self.ordres :
                 if ord == "Bin2Num":
-                    val = "0b" + val[::-1] 
+                    print(u" Decode cmd {0} from val : {1}".format(self.cmd, val))
+                    val = "0b" + val[::-1]
+                    print(val, type(val))
                     val = int(val, 2)
+                    print(val)
                     return val
                 elif val == self.ordres[ord] :
                     return ord
@@ -173,7 +179,7 @@ class Timing:
         self.rc6 = 0        # RC6 code (pas besoin de timing)
         self.notog = 0     # RC5 / RC6 toggle bit non utilisé
         if li !="" : self.decodeTimingITRrans(li)
-        else : self.setDict({'NUM':0, 'N': 4, 'FREQ': 38, 'FL': 0, 'RP': 0, 'RS': 0, 'RC5': 0, 'RC6': 0, 'RC': 1, 'NOTOG': 0, 'SB': 0, 
+        else : self.setDict({'NUM':0, 'N': 4, 'FREQ': 38, 'FL': 0, 'RP': 0, 'RS': 0, 'RC5': 0, 'RC6': 0, 'RC': 1, 'NOTOG': 0, 'SB': 0,
                                    'TIMINGS': [['440', '448'], ['440', '1288'], ['3448', '1720'], ['408', '29616']] })
 
     def decodeTimingITRrans (self, li):
@@ -188,7 +194,7 @@ class Timing:
                  if l3[0]   == 'N' :       self.nbt = int(l3[1])
                  elif l3[0] == 'RC' :     self.rc = int(l3[1])
                  elif l3[0] == 'RP' :     self.rp = int(l3[1])
-                 elif l3[0] == 'FL' :     self.fl = int(l3[1])    
+                 elif l3[0] == 'FL' :     self.fl = int(l3[1])
                  elif l3[0] == 'FREQ' :  self.freq = int(l3[1])
                  elif l3[0] == 'SB' :     self.sb = int(l3[1])
                  elif l3[0] == 'RS' :     self.rs = int(l3[1])
@@ -201,9 +207,9 @@ class Timing:
                          self.timings.append (l3[1].split(' '))
                      except ValueError:
                          False
-             return self    
+             return self
 
-    def encodeTimingIRTrans(self):      
+    def encodeTimingIRTrans(self):
         """Encode les informations de timing sous format IRTrans, pour inclure dans un fichier."""
         li ='  [%d][N]%d' %(self.num,  self.nbt)
         n = 1
@@ -224,8 +230,8 @@ class Timing:
 
     def display (self):
         """Affiche les valeurs de paramètres du timing"""
-        print "timing number :", self.num       
-        print "     number of timing values: ", self.nbt 
+        print "timing number :", self.num
+        print "     number of timing values: ", self.nbt
         print "     pair pulse/pause timings liste in micro sec. :", self.timings
         print "     repeat number : ", self.rc
         print "     pause between repeat in ms : ", self.rp
@@ -240,22 +246,22 @@ class Timing:
     def getDict (self):
         """Retourne les valeurs sous forme de dict"""
         return {
-            'N' : self.nbt, 
+            'N' : self.nbt,
             'RC' : self.rc,
             'RP' : self.rp,
             'FL' : self.fl,
             'FREQ' : self.freq,
             'SB' : self.sb,
             'RS' : self.rs,
-            'RC5' : self.rc5, 
-            'RC6' : self.rc6, 
+            'RC5' : self.rc5,
+            'RC6' : self.rc6,
             'NOTOG' : self.notog,
             'TIMINGS' : self.timings
             }
 
     def setDict(self,  timing):
         """Affecte le valeur du timming à la class."""
-        try : 
+        try :
             self.nbt = timing['N']
             self.rc = timing['RC']
             self.rp = timing['RP']
@@ -307,7 +313,7 @@ class Timings :
 
 class CodeIRDaikin :
     """Liste de cmd daikin pour gestion du code complet """
-    def __init__ (self,  remote,  nom ='test',  timing = Timing()):
+    def __init__ (self, remote, nom ='test', timing = Timing()):
         self.lstCmds = []     # Suite des commandes à enchainer
         self.nom =nom        # Nom de la commande
         self.timing=timing    # timing utilisé
@@ -352,27 +358,29 @@ class CodeIRDaikin :
         self.lstCmds.append (CmdDaikin (cmdsDaikin [14], 145, 8, {"Cheksum" : "00000000"}, "Cheksum"))
         self.lstCmds.append (CmdDaikin (cmdsDaikin [0], 153, 1, {"" : "0"}, ""))
 
-    def append (self, cmd):     # Ajout d'une commande avec ses paramètres
+    def append(self, cmd):     # Ajout d'une commande avec ses paramètres
         """Ajoute une commande à la collection"""
-        self.lstCmds.append (cmd)
+        self.lstCmds.append(cmd)
 
-    def buildBinCodeIR (self): 
+    def buildBinCodeIR(self):
         """Génère le code IR complet en fonction des valeurs courantes d'ordre, retourne une string de code binaire."""
         modExcept = {"Fan only" : 25,  "Dry" : 96}  # Valeurs corrigées en cas d'exception
         code=""
         for cmd in self.lstCmds :
             ord =""
-            opt =0
+            opt = cmd.opt
             if cmd.cmd == cmdsDaikin[4] :               # Exception pour les modes Ventillation et Condensation, la température doit-être imposée.
                 mode = self.lstCmds[self.indexCmd(cmdsDaikin[3])].ordC              # récupération du mode de chauffage
                 if mode in modExcept.keys():                                                    # si dans un mode d'exception -> forcer température
                     ord = "Bin2Num"
                     opt = modExcept[mode]
-            code = code + cmd.getIRCode (ord,  opt)
+            code = code + cmd.getIRCode (ord, opt)
+#            print(cmd.cmd, cmd.ordC, "forced : ", ord, opt)
+#            print("{0}".format(code))
         code = self.cheksum(codeConst + code)
         return code
 
-    def buildRawCodeIR (self): 
+    def buildRawCodeIR(self):
         """Génère le code IR complet en fonction des valeurs courantes d'ordre,
             retourne dict avec un tableau de code RAW avec les paires pulse/pause."""
         codeB = self.buildBinCodeIR()
@@ -380,7 +388,7 @@ class CodeIRDaikin :
         for t in codeB : codeR['PAIRS'].append(self.timing.timings[int(t)])
         return codeR
 
-    def indexCmd (self,  cmd):
+    def indexCmd(self,  cmd):
         """Retourne l'index, dans la liste de commande, d'une commande particulière"""
         for id in range(0,len(self.lstCmds )):
             if self.lstCmds[id].cmd == cmd :
@@ -388,36 +396,36 @@ class CodeIRDaikin :
                 break
         return -1
 
-    def setCmd (self, cmd, value):  
+    def setCmd(self, cmd, value):
         """Configure une commande de la liste"""
         id = self.indexCmd(cmd)
         if id != -1 :
             if cmd in [cmdsDaikin[4], cmdsDaikin [8] , cmdsDaikin [9]]:
                 ordre = "Bin2Num"
                 opt = value
-                if cmd in [cmdsDaikin [8] , cmdsDaikin [9]] : 
+                if cmd in [cmdsDaikin [8] , cmdsDaikin [9]] :
                     self.handleTimer(cmd, opt)
             else :
-                ordre =value
+                ordre = value
                 opt = 0
             self.lstCmds[id].setCurrentValue(ordre, opt)
-            return True       
+            return True
         else :
             return False
 
-    def getCmd (self,  cmd = cmdsDaikin [0]):  
+    def getCmd(self,  cmd = cmdsDaikin [0]):
         """Retourne l'etat d'une commande dous forme de dict {value, option}"""
         try :
             if cmd in [cmdsDaikin [8] , cmdsDaikin [9]] :
                 opt = self.formatStrDelais(self.lstCmds[self.indexCmd(cmd)].opt)
-            else : opt = self.self.lstCmds[self.indexCmd(cmd)].opt
-            return {"value": self.lstCmds[self.indexCmd(cmd)].ordC ,  "option" : opt}   
+            else : opt = self.lstCmds[self.indexCmd(cmd)].opt
+            return {"value": self.lstCmds[self.indexCmd(cmd)].ordC ,  "option" : opt}
         except ValueError :
             raise DaikinCodeException(u"Unknows command {0}".format(cmd))
 
 
-    def cheksum (self,  code):
-        """Calcul le checksum d'un code complet avec le code constructeurinclue (codeConst) et y insert le cheksum"""
+    def cheksum(self,  code):
+        """Calcul le checksum d'un code complet avec le code constructeur inclu (codeConst) et y insert le cheksum"""
         c = self.lstCmds[self.indexCmd(cmdsDaikin [14])]     # récupération des valeurs de positions
         lgC = len(codeConst)
         posChk = c.offset + lgC
@@ -427,8 +435,8 @@ class CodeIRDaikin :
             chk=chk + int (dataC[i:i+8][::-1], 2)    # addition des bytes après reverse bits
         return code[0:posChk] + bin(chk)[::-1][0:c.dim] + code[posChk +c.dim:]   # reconstruction de code complet
 
-    def labelEtatCmds (self) :
-        """Retorune uniquement l'état des commandes utilisateur sous forme liste de dictionnaire"""
+    def labelEtatCmds(self) :
+        """Retourne uniquement l'état des commandes utilisateur sous forme liste de dictionnaire"""
         modExcept = {"Fan only" : 25,  "Dry" : 96}   # Valeurs corrigées en cas d'exception
         etatC = {}
         for cmd in self.lstCmds:
@@ -446,7 +454,7 @@ class CodeIRDaikin :
 #            return  '[T]%d[D]%s' %(self.timing.num,  self.buildBinCodeIR ())
         return  self.buildBinCodeIR()
 
-    def decodeCodeBin(self,  codeC):
+    def decodeCodeBin(self, codeC, forceUpdate = False):
         """Decode un code 'binaire' entier (avec le codeConst DAIKIN) et renvoie un dict des valeurs courantes et à mettre à jour."""
         lgC = len(codeConst)
         code = codeC[lgC:]
@@ -456,15 +464,15 @@ class CodeIRDaikin :
             state = cmd.extractOrdFromBinCode(code)
             if state != None :
                 if cmdsState.has_key(cmd.cmd) :
-                    if cmdsState[cmd.cmd] != state:
+                    if cmdsState[cmd.cmd] != state or forceUpdate:
                         change.update({cmd.cmd: state})
-        return {'current': cmdsState,  'toUpdate' : change}
+        return {'current': cmdsState, 'toUpdate' : change}
 
-    def setDatetime(self,  date):
+    def setDatetime(self, date):
         """Mémorise la delta entre les dates de la PAC et celle du PC."""
         self.deltaDate = datetime.now() - date
 
-    def getCurrentDate(self):  
+    def getCurrentDate(self):
         """Retourne le date courante supposée de la PAC, calcul par rapport à la dernière date connue."""
         return datetime.now() - self.deltaDate
 
@@ -485,53 +493,49 @@ class CodeIRDaikin :
             return self.getDateByOffset(mins).strftime("%H:%M:%S.%f")[:10]
 
     def handleTimer(self, name,  duration):
-        if self.timers.has_key(name) : 
-            if duration <= 0 : 
+        if self.timers.has_key(name) :
+            if duration <= 0 :
                 self.timers[name].stop()
                 del self.timers[name]
                 return
-        elif duration > 0 : 
+        elif duration > 0 :
             self.timers[name] = TimerDaikin(60.0, duration, self.updateTimer, self.finishTimer,  [name])
             self.timers[name].start()
 
-    def updateTimer(self, tps, name): 
+    def updateTimer(self, tps, name):
         if tps < 0 : tps =0
-        self.setCmd(name,  int(tps))
-        data =  {"device": self._remote.getDomogikDevice, 'type' :  name, 'time' : self.formatStrDelais(int(tps))}
-        self._remote._manager._cb_send_xPL('xpl-trig', 'sensor.basic',  data)
+        self.setCmd(name, int(tps))
+        self._remote._manager.sendSensorUpdate({'name':self.formatStrDelais(int(tps))})
 
     def finishTimer(self, name):
-        print "Timer {0} achévé :)".format(name)
-        data =  {"device": self._remote.getDomogikDevice, 'type' :  name, 'time' : self.formatStrDelais(0)}
-        self._remote._manager._cb_send_xPL('xpl-trig', 'sensor.basic',  data)
+        print "Timer {0} finish.".format(name)
+        self._remote._manager.sendSensorUpdate({'name':self.formatStrDelais(0)})
         if name == cmdsDaikin [8]: state ='On'  # starttime
         else : state ='Off'
-        data =  {"device": self._remote.getDomogikDevice, 'type' :  'power',  'state': state}
-        self._remote._manager._cb_send_xPL('xpl-trig', 'sensor.basic',  data)
+        self._remote._manager.sendSensorUpdate({'power': state})
         del self.timers[name]
-        self.setCmd(type,  0)
+        self.setCmd(name,  0)
 
 if __name__ == '__main__' :
-    cmds = CodeIRDaikin()
+    cmds = CodeIRDaikin(None)
     a, nb = 0, 23
     while a < nb :
         print cmds.lstCmds[a].cmd, " --> ", cmds.lstCmds[a].ordC
         a=a+1
-    print cmds.buildBinCodeIR ()                 
+    print cmds.buildBinCodeIR ()
     tims = Timings()
     tims.litFichIRTrans("..\data\Daikin.rem")
-    for t in tims.lstTimings : 
+    for t in tims.lstTimings :
         print t.getDict()
         t.setDict({'TIMINGS': [['440', '448'], ['440', '1288'], ['3448', '1720'], ['408', '29616']], 'N': 4, 'FREQ': 38, 'FL': 0, 'RP': 0, 'RS': 0, 'RC5': 0, 'RC6': 0, 'RC': 1, 'NOTOG': 0, 'SB': 0})
     print cmds.buildRawCodeIR()
-    cmds.setCmd("setmode","Fan only")
+    cmds.setCmd("mode","heat")
     cmds.setCmd("power","On")
     cmds.setCmd("setpoint", 35)
     cmds.setCmd("vertical_swing", "On")
     cmds.setCmd("speedfan", "Auto")
     print cmds.buildBinCodeIR ()
-    for lab in cmds.labelEtatCmds() :
-        print lab.keys(),  lab.values()
+    print cmds.labelEtatCmds()
 
     print tims.encodeTimingsIRTrans()
     print cmds.encodeCmdIRTrans()
